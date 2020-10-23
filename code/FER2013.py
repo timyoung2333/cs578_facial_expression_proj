@@ -22,14 +22,21 @@ class FER2013:
                 emotion, usage, pixels = line.split(",")
                 pixels = np.asarray([int(j) for j in pixels.split(" ")])
 
-                self.X[i] = pixels
+                self.X[i] = self.encoding(pixels)
                 self.Y[i] = emotion
 
                 i += 1
 
+    def encoding(self, vec):
+        """
+        TODO modify this method in the future to explore different encoding methods.
+        Here we use one hot encoding first.
+        """
+        return vec
+
     def getX(self, img_id):
         """
-        Returen feature vector (one hot encoding by default)
+        Returen feature vector
         """
         return self.X[img_id]
 
