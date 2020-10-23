@@ -4,16 +4,17 @@
 import sys
 import cv2
 import numpy as np
+from tqdm import tqdm
 
 filename = "icml_face_data.csv"
-save_dir = "images/"
+save_dir = "images"
 
 def save_image(line, img_name):
 
     emotion, usage, pixels = line.split(",")
     pixels = [int(i) for i in pixels.split(" ")]
-    print(len(pixels))
-    exit(0)
+    pixels = np.asarray(pixels).reshape((48, 48))
+    cv2.imwrite(img_name, pixels)
 
 def main():
 
@@ -21,8 +22,8 @@ def main():
 
         counter = 0
         lines = f.readlines()
-        for line in lines[1:]:
-            save_image(line, "{:05d}.jpg".format(counter))
+        for line in tqdm(lines[1:]):
+            save_image(line, "{}/{:05d}.jpg".format(save_dir, counter))
             counter += 1
 
 
