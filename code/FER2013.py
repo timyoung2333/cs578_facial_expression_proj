@@ -5,7 +5,7 @@ import numpy as np
 
 class FER2013:
 
-    def __init__(filename="../data/icml_face_data.csv"):
+    def __init__(self, filename="../data/icml_face_data.csv"):
         """
         Load data
         """
@@ -14,6 +14,7 @@ class FER2013:
 
         with open(filename) as f:
 
+            print("Loading FER2013 dataset from {}".format(filename))
             i = 0
             lines = f.readlines()
             for line in tqdm(lines[1:]):
@@ -26,13 +27,13 @@ class FER2013:
 
                 i += 1
 
-    def getX(img_id):
+    def getX(self, img_id):
         """
         Returen feature vector (one hot encoding by default)
         """
         return self.X[img_id]
 
-    def getY(img_id):
+    def getY(self, img_id):
         """
         Return image label
         """
