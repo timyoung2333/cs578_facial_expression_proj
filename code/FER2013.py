@@ -20,7 +20,7 @@ class FER2013:
             for line in tqdm(lines[1:]):
 
                 emotion, usage, pixels = line.split(",")
-                pixels = np.asarray([int(i) for i in pixels.split(" ")])
+                pixels = np.asarray([int(j) for j in pixels.split(" ")])
 
                 self.X[i] = pixels
                 self.Y[i] = emotion
