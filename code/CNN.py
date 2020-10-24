@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# The class of CNN
+# Reference: https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
 from FER2013 import FER2013
 import torch
 import torchvision
@@ -6,6 +8,7 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from tqdm import tqdm
 
 class Net(nn.Module):
 
@@ -18,6 +21,9 @@ class Net(nn.Module):
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
+        self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        self.to(self.device)
+
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
@@ -26,6 +32,54 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+    def train(self, trainset, batch_size=256, epoch_num=100):
+
+        trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                              shuffle=True, num_workers=2)
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
+
+        for epoch in range(epoch_num):  # loop over the dataset multiple times
+
+            epoch_loss = 0
+            for i, data in enumerate(trainloader, 0):
+                # get the inputs; data is a list of [inputs, labels]
+                # inputs, labels = data
+                inputs, labels = data[0].to(self.device), data[1].to(self.device)
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # forward + backward + optimize
+                outputs = self(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+
+                epoch_loss += loss.item()
+
+            # print loss
+            print("epoch: {}, loss: {:.3f}".format(epoch, epoch_loss/len(trainloader)))
+
+        print('Finished Training')
+
+    def save(self, path="./model/cnn.pth"):
+        """
+        Save the trained model
+        """
+        torch.save(self.state_dict(), path)
+        print("Model has been saved in {}".format(path))
+
+
+    # def predict(self, testset):
+
+    #     testloader = torch.utils.data.DataLoader(testset, batch_size=4,
+    #                                              shuffle=False, num_workers=2)
+    #     images, labels = data
+    #     outputs = self(testset)
+    #     _, predicted = torch.max(outputs.data, 1)
+    #     return predicted
 
 def main():
     # fer = FER2013("../data/sample.csv")
@@ -48,43 +102,10 @@ def main():
     classes = ('plane', 'car', 'bird', 'cat',
                'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-    print(len(trainset))
-    print(len(testset))
-    print(trainset[0])
-
     net = Net()
-
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
-    net.to(device)
-
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-
-    for epoch in range(2):  # loop over the dataset multiple times
-
-        running_loss = 0.0
-        for i, data in enumerate(trainloader, 0):
-            # get the inputs; data is a list of [inputs, labels]
-            # inputs, labels = data
-            inputs, labels = data[0].to(device), data[1].to(device)
-
-            # zero the parameter gradients
-            optimizer.zero_grad()
-
-            # forward + backward + optimize
-            outputs = net(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-
-            # print statistics
-            running_loss += loss.item()
-            if i % 2000 == 1999:    # print every 2000 mini-batches
-                print('[%d, %5d] loss: %.3f' %
-                      (epoch + 1, i + 1, running_loss / 2000))
-                running_loss = 0.0
-
-    print('Finished Training')
+    net.train(trainset)
+    net.save()
+    # net.predict(trainset)
 
 if __name__ == "__main__":
     main()
