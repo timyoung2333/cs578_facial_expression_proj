@@ -64,26 +64,9 @@ class FER2013:
         label = self.Y_dic[img_id]
         return self.label2expression[label]
 
-    def getTrainset(self, id_list):
+    def getSubset(self, id_list):
         """
-        Input: the IDs of images in the train set, id_list
-        Output: matrix X of features, with n rows (samples), d columns (features)
-                    X(i,j) is the j-th feature of the i-th sample
-                vector y of labels, with n rows (samples), 1 column
-                    y(i) is the label (+1 or -1) of the i-th sample
-        """
-        X = []
-        y = []
-
-        for i in id_list:
-            X.append(self.getVector(i))
-            y.append(self.getLabel(i))
-
-        return X, y
-
-    def getTestset(self, id_list):
-        """
-        Input: the IDs of images in the test set, id_list
+        Input: id_list, the list of image ids
         Output: matrix X of features, with n rows (samples), d columns (features)
                     X(i,j) is the j-th feature of the i-th sample
                 vector y of labels, with n rows (samples), 1 column
