@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sklearn.svm as svm
 from FER2013 import FER2013
 
@@ -12,6 +13,6 @@ if __name__=="__main__":
     test_list = ["{:05d}".format(i) for i in range(20000, 25000)]
     X_test, y_test = fer.getSubset(test_list)
 
-    model = svm.SVC(C=1.0, decision_function_shape='ovo', kernel='rbf', tol=0.001)
+    model = svm.SVC(C=1.0, decision_function_shape='ovo', kernel='rbf', tol=0.001, verbose=True)
     model.fit(X_train, y_train)
     print("mean accuracy:", model.score(X_test, y_test))
