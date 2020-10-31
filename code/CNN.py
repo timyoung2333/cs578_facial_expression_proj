@@ -10,10 +10,10 @@ import torch.nn.functional as F
 import torch.optim as optim
 from tqdm import tqdm
 
-class Net(nn.Module):
+class CNN(nn.Module):
 
     def __init__(self):
-        super(Net, self).__init__()
+        super(CNN, self).__init__()
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
@@ -102,10 +102,10 @@ def main():
     classes = ('plane', 'car', 'bird', 'cat',
                'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-    net = Net()
-    net.train(trainset)
-    net.save()
-    # net.predict(trainset)
+    cnn = CNN()
+    cnn.train(trainset)
+    cnn.save()
+    # cnn.predict(trainset)
 
 if __name__ == "__main__":
     main()
