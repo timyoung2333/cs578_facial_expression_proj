@@ -47,7 +47,7 @@ class FER2013:
         TODO: Modify this method in the future to explore different encoding methods.
               Here we use one hot encoding first.
         """
-        return np.asarray(self.X_dic[img_id]) / 255
+        return np.array(self.X_dic[img_id]) / 255
 
     def getLabel(self, img_id):
         """
@@ -79,7 +79,7 @@ class FER2013:
             X.append(self.getVector(i))
             y.append(self.getLabel(i))
 
-        return X, y
+        return np.array(X), np.array(y)
 
     def showImage(self, img_id):
         """
