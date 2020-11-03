@@ -1,5 +1,8 @@
 # CS578-Project
 
+## Link of dataset
+https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data
+
 ## Requirement
 > The preliminary project report is due on Thursday November 5, 11.59pm EST
 > (No extension days allowed, submission will open on November 2.)
