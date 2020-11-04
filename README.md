@@ -30,6 +30,21 @@ https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression
 ## Labels
 0=Angry, 1=Disgust, 2=Fear, 3=Happy, 4=Sad, 5=Surprise, 6=Neutral.
 
+## Dataset Description
+* Source  
+FER-2013 data was created by Pierre Luc Carrier and Aaron Courville, by using Google image search API to search for images of faces that match a set of 184 emotion-related keywords like "blissful", "enraged", etc.
+Together with keywords like gender, age and ethnicity, about 600 strings were used to query facial images, and the first 1000 images return for each query were kept for the next stage of processing.
+
+* Processing  
+The collected images were approved by human labelers who removed incorrectly labeled images, cropped to only faces by bounding box utility of OpenCV face recognition, and resized to 48 x 48 pixels greyscale images. 
+Then a subset of the images were chosen by Mehdi Mirza and Ian Goodfellow, and the labels(categories) of the chosen images were also mapped from the fine-grained emotion keywords.
+
+* Structure  
+The resulting FER-2013 dataset contains 35887 images with 7 categories in total. Specifically, there are 4953 “Anger” images, 547 “Disgust” images, 5121 “Fear” images, 8989 “Happiness” images, 6077 “Sadness” images, 4002 “Surprise” images, and 6198 “Neutral” images.
+
+* Validation  
+It was proven by Ian Goodfellow that the potential label errors in FER-2013 dataset do not make the classification problem significantly harder due to the experimental result that human accuracy on a small-scale dataset with 1500 images, 7 expression categories and no label error is 63~72%, which is very close to the human accuracy for FER-2013, which is 60~70%.  
+
 ## Tips
 Use python pickle to save models.
 
