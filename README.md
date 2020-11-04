@@ -43,7 +43,7 @@ Then a subset of the images were chosen by Mehdi Mirza and Ian Goodfellow, and t
 The resulting FER-2013 dataset contains 35887 images with 7 categories in total. Specifically, there are 4953 “Anger” images, 547 “Disgust” images, 5121 “Fear” images, 8989 “Happiness” images, 6077 “Sadness” images, 4002 “Surprise” images, and 6198 “Neutral” images.
 
 * Validation  
-It was proven by Ian Goodfellow that the potential label errors in FER-2013 dataset do not make the classification problem significantly harder due to the experimental result that human accuracy on a small-scale dataset with 1500 images, 7 expression categories and no label error is 63~72%, which is very close to the human accuracy for FER-2013, which is 60~70%.  
+It was proven by Ian Goodfellow that the potential label errors in FER-2013 dataset do not make the classification problem significantly harder due to the experimental result that human accuracy on a small-scale dataset with 1500 images, 7 expression categories and no label error is 63-72%, which is very close to the human accuracy for FER-2013, which is 60-70%.  
 
 ## Tips
 Use python pickle to save models.
