@@ -3,6 +3,7 @@
 from tqdm import tqdm
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
 
 class FER2013:
 
@@ -93,9 +94,21 @@ class FER2013:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+    def showDistribution(self):
+        res = [sum([self.Y_dic[img_id] == label for img_id in self.Y_dic]) for label in self.label2expression]
+        plt.bar(list(self.label2expression.keys()), res)
+        for x, y in zip(self.label2expression, res):
+            plt.text(x, y, '%d' % y, ha='center', va='bottom')
+            plt.text(x, y*0.95, '%.02f%%' % (y / sum(res) * 100), ha='center', va='top')
+        plt.xticks(list(self.label2expression.keys()), self.label2expression.values())
+        plt.title('Number/Percentage of Each Label in the FER-2013 Dataset')
+        plt.show()
+
 if __name__=="__main__":
 
     # Example code
     fer = FER2013("../data/sample.csv")
+    # fer = FER2013("../data/icml_face_data.csv")
     fer.showImage(img_id="00010")
+    # fer.showDistribution()
 
