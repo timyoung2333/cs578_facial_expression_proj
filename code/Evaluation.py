@@ -156,6 +156,7 @@ if __name__ == "__main__":
             train_acc, test_acc, cf_matrix = eva.kfoldCrossValidation(K, model)
             train_acc_array.append(train_acc)
             test_acc_array.append(test_acc)
+        plt.figure()
         plt.plot(subset_sizes, test_acc_array)
         plt.plot(subset_sizes, train_acc_array)
         plt.scatter(subset_sizes, test_acc_array)
