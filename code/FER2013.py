@@ -144,8 +144,14 @@ if __name__=="__main__":
     # fer = FER2013("../data/sample.csv")
     fer = FER2013("../data/icml_face_data.csv")
     # fer.showImage(img_id="00010")
-    # fer.showDistribution()
+    fer.showDistribution()
 
-    res = fer.getImageIdByLabel(label=1)
-    print(res)
+    # get image id for fig:fer-examples
+    print(fer.getImageIdByLabel(label=0)[:4])
+    print(fer.getImageIdByLabel(label=1)[:4])
+    print(fer.getImageIdByLabel(label=2)[:4])
+    print(fer.getImageIdByLabel(label=3)[:4])
+    print(fer.getImageIdByLabel(label=4)[:4])
+    print(fer.getImageIdByLabel(label=5)[:4])
+    print(fer.getImageIdByLabel(label=6)[:4])
 
