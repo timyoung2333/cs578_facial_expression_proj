@@ -82,6 +82,26 @@ class FER2013:
 
         return np.array(X), np.array(y)
 
+    def getSubsetByLabel(self, label):
+        """
+        Input: label, an integer that represents the label
+        Output: matrix X of features, with n rows (samples), d columns (features)
+                    X(i,j) is the j-th feature of the i-th sample
+                vector y of labels, with n rows (samples), 1 column
+                    y(i) is the label (+1 or -1) of the i-th sample
+        """
+
+        X = []
+        y = []
+
+        for i in self.X_dic.keys():
+
+            if self.getLabel(i) == label:
+                X.append(self.getVector(i))
+                y.append(self.getLabel(i))
+
+        return np.array(X), np.array(y)
+
     def showImage(self, img_id):
         """
         Input: image id
@@ -95,6 +115,9 @@ class FER2013:
         cv2.destroyAllWindows()
 
     def showDistribution(self):
+        """
+        Show label distribution in the entire dataset
+        """
         res = [sum([self.Y_dic[img_id] == label for img_id in self.Y_dic]) for label in self.label2expression]
         plt.bar(list(self.label2expression.keys()), res)
         for x, y in zip(self.label2expression, res):
