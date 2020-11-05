@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
 # A class to handle data reader, image encoding, etc.
 from tqdm import tqdm
-from collections import defaultdict
 import numpy as np
 import cv2
-import os
-import random
-
+import matplotlib.pyplot as plt
+import dlib
+from collections import defaultdict
 
 class FER2013:
 
-    def __init__(self, filename="/Users/timyang/Downloads/CS578-Project-master/data/icml_face_data.csv"): # You may change the directory to make the code work
+    def __init__(self, filename="../data/icml_face_data.csv"):
         """
         Load data
         """
         self.X_dic = {}
         self.Y_dic = {}
         self.label_dic = defaultdict(list)
-        
+
         self.label2expression = {
             0: "Angry",
             1: "Disgust",
@@ -43,16 +42,54 @@ class FER2013:
                 self.X_dic[img_id] = pixels
                 self.Y_dic[img_id] = emotion
                 self.label_dic[emotion].append(img_id)
+
                 i += 1
 
-    def getVector(self, img_id):
+        # dlib facial landmark detector: http://dlib.net/face_landmark_detection.py.html
+        self.dlib_predictor = dlib.shape_predictor("model/shape_predictor_68_face_landmarks.dat")
+
+        # Haar Cascade Face Detector: https://www.learnopencv.com/face-detection-opencv-dlib-and-deep-learning-c-python/
+        self.faceCascade = cv2.CascadeClassifier("model/haarcascade_frontalface_default.xml")
+
+    def getVector(self, img_id, encoding="raw_pixels"):
         """
         Input: image id
         Output: vector vec of features, with 1 row, d columns (features)
-        TODO: Modify this method in the future to explore different encoding methods.
-              Here we normalized the pixel values of images.
         """
-        return np.array(self.X_dic[img_id]) / 255
+        vec = []
+
+        if encoding == "raw_pixels":
+            vec = np.array(self.X_dic[img_id]) / 255
+
+        if encoding == "landmarks":
+            img = np.uint8(np.asarray(self.X_dic[img_id]).reshape((48, 48)) / 255)
+            face_rect = dlib.rectangle(left=0, top=0, right=47, bottom=47)
+            landmarks = self.dlib_predictor(img, face_rect)
+
+            # use one hot encoding for landmarks
+            vec = np.zeros((48, 48))
+            for i in range(68):
+                x, y = landmarks.part(i).x, landmarks.part(i).y
+                # TODO sometimes the predicted landmark may out of bound
+                if landmarks and 0 <= x < 48 and 0 <= y < 48:
+                    vec[y, x] = 1
+
+            vec = vec.flatten()
+
+        if encoding == "Haar":
+            img = np.uint8(np.asarray(self.X_dic[img_id]).reshape((48, 48)) / 255)
+            faces = self.faceCascade.detectMultiScale(img)
+
+            vec = np.array([0, 0, 47, 47])
+            if len(faces) > 0:
+                # TODO always fail because the input image is too small
+                face = faces[0]
+                vec[0] = face.left()
+                vec[1] = face.top()
+                vec[2] = face.right() - face.left()
+                vec[3] = face.bottom() - face.top()
+
+        return vec
 
     def getLabel(self, img_id):
         """
@@ -69,7 +106,7 @@ class FER2013:
         label = self.Y_dic[img_id]
         return self.label2expression[label]
 
-    def getSubset(self, id_list):
+    def getSubset(self, id_list, encoding="raw_pixels"):
         """
         Input: id_list, the list of image ids
         Output: matrix X of features, with n rows (samples), d columns (features)
@@ -81,12 +118,42 @@ class FER2013:
         y = []
 
         for i in id_list:
-            X.append(self.getVector(i))
+            X.append(self.getVector(i, encoding))
             y.append(self.getLabel(i))
 
         return np.array(X), np.array(y)
-    
-    
+
+    def getSubsetByLabel(self, label):
+        """
+        Input: label, an integer that represents the label
+        Output: matrix X of features, with n rows (samples), d columns (features)
+                    X(i,j) is the j-th feature of the i-th sample
+                vector y of labels, with n rows (samples), 1 column
+                    y(i) is the label (+1 or -1) of the i-th sample
+        """
+        X = []
+        y = []
+
+        for i in self.X_dic:
+            if self.getLabel(i) == label:
+                X.append(self.getVector(i))
+                y.append(self.getLabel(i))
+
+        return np.array(X), np.array(y)
+
+    def getImageIdByLabel(self, label):
+        """
+        Input: label, an integer that represents the label
+        Output: id_list, the list of image ids
+        """
+        res = []
+
+        for i in self.X_dic:
+            if self.getLabel(i) == label:
+                res.append(i)
+
+        return res
+
     def getSubDataset(self, num, method=None):
         """
         Input: the number of images from each class (equal num)
@@ -99,9 +166,6 @@ class FER2013:
                 random.shuffle(v)
             subDataset[k] = self.getSubset(v[0:num])[0]
         return subDataset
-        
-        
-        
 
     def showImage(self, img_id):
         """
@@ -114,12 +178,38 @@ class FER2013:
         cv2.imshow(text, img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-    
 
+    def showDistribution(self):
+        """
+        Show label distribution in the entire dataset
+        """
+        res = [len(self.getSubsetByLabel(label)[0]) for label in self.label2expression]
+        plt.bar(list(self.label2expression.keys()), res)
+        for x, y in zip(self.label2expression, res):
+            plt.text(x, y, '%d' % y, ha='center', va='bottom')
+            plt.text(x, y*0.95, '%.02f%%' % (y / sum(res) * 100), ha='center', va='top')
+        plt.xticks(list(self.label2expression.keys()), self.label2expression.values())
+        plt.title('Number/Percentage of Each Label in the FER-2013 Dataset')
+        plt.show()
 
 if __name__=="__main__":
 
+    fer = FER2013("../data/sample.csv")
+    fer.getVector(img_id="00000", encoding="landmarks")
+    fer.getVector(img_id="00000", encoding="Haar")
+
     # # Example code
-    print(os.getcwd())
-    fer = FER2013(os.getcwd()+"/data/icml_face_data.csv")
-    fer.showImage(img_id="00009")
+    # # fer = FER2013("../data/sample.csv")
+    # fer = FER2013("../data/icml_face_data.csv")
+    # # fer.showImage(img_id="00010")
+    # fer.showDistribution()
+
+    # # get image id for fig:fer-examples
+    # print(fer.getImageIdByLabel(label=0)[:4])
+    # print(fer.getImageIdByLabel(label=1)[:4])
+    # print(fer.getImageIdByLabel(label=2)[:4])
+    # print(fer.getImageIdByLabel(label=3)[:4])
+    # print(fer.getImageIdByLabel(label=4)[:4])
+    # print(fer.getImageIdByLabel(label=5)[:4])
+    # print(fer.getImageIdByLabel(label=6)[:4])
+
