@@ -100,6 +100,19 @@ class FER2013:
 
         return np.array(X), np.array(y)
 
+    def getImageIdByLabel(self, label):
+        """
+        Input: label, an integer that represents the label
+        Output: id_list, the list of image ids
+        """
+        res = []
+
+        for i in self.X_dic:
+            if self.getLabel(i) == label:
+                res.append(i)
+
+        return res
+
     def showImage(self, img_id):
         """
         Input: image id
@@ -131,5 +144,8 @@ if __name__=="__main__":
     # fer = FER2013("../data/sample.csv")
     fer = FER2013("../data/icml_face_data.csv")
     # fer.showImage(img_id="00010")
-    fer.showDistribution()
+    # fer.showDistribution()
+
+    res = fer.getImageIdByLabel(label=1)
+    print(res)
 
