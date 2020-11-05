@@ -56,40 +56,54 @@ class FER2013:
         Input: image id
         Output: vector vec of features, with 1 row, d columns (features)
         """
-        vec = []
+
+        # ============================================
+        # raw pixel
+        vec_raw_pixels = np.array(self.X_dic[img_id]) / 255
+
+        # ============================================
+        # facial landmark
+        img = np.uint8(np.asarray(self.X_dic[img_id]).reshape((48, 48)) / 255)
+        face_rect = dlib.rectangle(left=0, top=0, right=47, bottom=47)
+        landmarks = self.dlib_predictor(img, face_rect)
+
+        # extract features using the method from this paper: https://arxiv.org/pdf/1812.04510.pdf
+        vec_landmarks = []
+        key_points = [[37, 40], [38, 42], [43, 46], [44, 48], [18, 22], [23, 27], [49, 55], [18, 41], [48, 27], [34, 67], [42, 49], [47, 55]]
+
+        for i, j in key_points:
+            p1 = np.array([landmarks.part(i).x, landmarks.part(i).y])
+            p2 = np.array([landmarks.part(j).x, landmarks.part(j).y])
+            dis = np.linalg.norm(p1 - p2)
+            vec_landmarks.append(dis)
+
+        vec_landmarks = np.array(vec_landmarks)
+
+        # ============================================
+        # Haar face detection
+        img = np.uint8(np.asarray(self.X_dic[img_id]).reshape((48, 48)) / 255)
+        faces = self.faceCascade.detectMultiScale(img)
+
+        vec_haar = np.array([0, 0, 47, 47])
+        if len(faces) > 0:
+            # TODO always fail because the input image is too small
+            face = faces[0]
+            vec_haar[0] = face.left()
+            vec_haar[1] = face.top()
+            vec_haar[2] = face.right() - face.left()
+            vec_haar[3] = face.bottom() - face.top()
 
         if encoding == "raw_pixels":
-            vec = np.array(self.X_dic[img_id]) / 255
+            return vec_raw_pixels
 
         if encoding == "landmarks":
-            img = np.uint8(np.asarray(self.X_dic[img_id]).reshape((48, 48)) / 255)
-            face_rect = dlib.rectangle(left=0, top=0, right=47, bottom=47)
-            landmarks = self.dlib_predictor(img, face_rect)
-
-            # use one hot encoding for landmarks
-            vec = np.zeros((48, 48))
-            for i in range(68):
-                x, y = landmarks.part(i).x, landmarks.part(i).y
-                # TODO sometimes the predicted landmark may out of bound
-                if landmarks and 0 <= x < 48 and 0 <= y < 48:
-                    vec[y, x] = 1
-
-            vec = vec.flatten()
+            return vec_landmarks
 
         if encoding == "Haar":
-            img = np.uint8(np.asarray(self.X_dic[img_id]).reshape((48, 48)) / 255)
-            faces = self.faceCascade.detectMultiScale(img)
+            return vec_haar
 
-            vec = np.array([0, 0, 47, 47])
-            if len(faces) > 0:
-                # TODO always fail because the input image is too small
-                face = faces[0]
-                vec[0] = face.left()
-                vec[1] = face.top()
-                vec[2] = face.right() - face.left()
-                vec[3] = face.bottom() - face.top()
-
-        return vec
+        if encoding == "raw_pixels+landmarks":
+            return np.concatenate((vec_raw_pixels, vec_landmarks), axis=None)
 
     def getLabel(self, img_id):
         """
@@ -197,6 +211,7 @@ if __name__=="__main__":
     fer = FER2013("../data/sample.csv")
     fer.getVector(img_id="00000", encoding="landmarks")
     fer.getVector(img_id="00000", encoding="Haar")
+    fer.getVector(img_id="00000", encoding="raw_pixels+landmarks")
 
     # # Example code
     # # fer = FER2013("../data/sample.csv")

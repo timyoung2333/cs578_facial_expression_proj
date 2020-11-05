@@ -41,10 +41,10 @@ if __name__=="__main__":
     fer = FER2013()
 
     train_list = ["{:05d}".format(i) for i in range(20000)]
-    X_train, y_train = fer.getSubset(train_list)
+    X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels+landmarks")
 
     test_list = ["{:05d}".format(i) for i in range(20000, 25000)]
-    X_test, y_test = fer.getSubset(test_list)
+    X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels+landmarks")
 
     model = Perceptron(tol=1e-3, random_state=0, verbose=1, n_jobs=8)
     model.train(X_train, y_train)
