@@ -117,14 +117,10 @@ class Evaluation:
 # ev.testModel(10, model)
 
 if __name__ == "__main__":
-    # algorithms = {"Perceptron": Perceptron(Perceptron(tol=1e-3, random_state=0, verbose=1, n_jobs=8)),
-    #               "SVM":        SVM(C=1.0, decision_function_shape='ovo', kernel='rbf', tol=0.001, verbose=True),
-    #               "AdaBoost":   AdaBoost(n_estimators=100, random_state=0),
-    #               "MLP":        MLP(random_state=1, max_iter=300, verbose=True)}
-
-    algorithms = {"SVM": SVM(C=1.0, decision_function_shape='ovo', kernel='rbf', tol=0.001, verbose=True),
-                  "AdaBoost": AdaBoost(n_estimators=100, random_state=0),
-                  "MLP": MLP(random_state=1, max_iter=300, verbose=True)}
+    algorithms = {"Perceptron": Perceptron(Perceptron(tol=1e-3, random_state=0, verbose=1, n_jobs=8)),
+                  "SVM":        SVM(C=1.0, decision_function_shape='ovo', kernel='rbf', tol=0.001, verbose=True),
+                  "AdaBoost":   AdaBoost(n_estimators=100, random_state=0),
+                  "MLP":        MLP(random_state=1, max_iter=300, verbose=True)}
 
     fer = FER2013()
     # generate confusion matrix for every algorithm
