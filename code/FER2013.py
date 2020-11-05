@@ -43,8 +43,10 @@ class FER2013:
                 i += 1
 
         # dlib facial landmark detector: http://dlib.net/face_landmark_detection.py.html
-        # self.dlib_detector = dlib.get_frontal_face_detector()
         self.dlib_predictor = dlib.shape_predictor("model/shape_predictor_68_face_landmarks.dat")
+
+        # Haar Cascade Face Detector: https://www.learnopencv.com/face-detection-opencv-dlib-and-deep-learning-c-python/
+        self.faceCascade = cv2.CascadeClassifier("model/haarcascade_frontalface_default.xml")
 
     def getVector(self, img_id, encoding="raw_pixels"):
         """
@@ -70,6 +72,21 @@ class FER2013:
                 # TODO sometimes the predicted landmark may out of bound
                 if landmarks and 0 <= x < 48 and 0 <= y < 48:
                     vec[y, x] = 1
+
+            vec = vec.flatten()
+
+        if encoding == "Haar":
+            img = np.uint8(np.asarray(self.X_dic[img_id]).reshape((48, 48)) / 255)
+            faces = self.faceCascade.detectMultiScale(img)
+
+            vec = np.array([0, 0, 47, 47])
+            if len(faces) > 0:
+                # TODO always fail because the input image is too small
+                face = faces[0]
+                vec[0] = face.left()
+                vec[1] = face.top()
+                vec[2] = face.right() - face.left()
+                vec[3] = face.bottom() - face.top()
 
         return vec
 
@@ -165,6 +182,8 @@ if __name__=="__main__":
 
     fer = FER2013("../data/sample.csv")
     fer.getVector(img_id="00010", encoding="landmarks")
+    for i in range(100):
+        fer.getVector(img_id="{:05d}".format(i), encoding="Haar")
 
     # # Example code
     # # fer = FER2013("../data/sample.csv")
