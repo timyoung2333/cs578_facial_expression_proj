@@ -72,6 +72,7 @@ class Evaluation:
         cf_matrix = np.zeros((7, 7)) # y-axis is true label, x-axis is predicted label
         for t in range(0, k):
             X_train, y_train, X_test, y_test = self.kfoldSplit(k, t)
+            model.train(X_train, y_train)
             y_pred_train = model.predict(X_train)
             train_acc += model.score(X_train, y_train)
             y_pred_test = model.predict(X_test)
