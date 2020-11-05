@@ -90,12 +90,10 @@ class FER2013:
                 vector y of labels, with n rows (samples), 1 column
                     y(i) is the label (+1 or -1) of the i-th sample
         """
-
         X = []
         y = []
 
-        for i in self.X_dic.keys():
-
+        for i in self.X_dic:
             if self.getLabel(i) == label:
                 X.append(self.getVector(i))
                 y.append(self.getLabel(i))
@@ -118,7 +116,7 @@ class FER2013:
         """
         Show label distribution in the entire dataset
         """
-        res = [sum([self.Y_dic[img_id] == label for img_id in self.Y_dic]) for label in self.label2expression]
+        res = [len(self.getSubsetByLabel(label)[0]) for label in self.label2expression]
         plt.bar(list(self.label2expression.keys()), res)
         for x, y in zip(self.label2expression, res):
             plt.text(x, y, '%d' % y, ha='center', va='bottom')
@@ -130,8 +128,8 @@ class FER2013:
 if __name__=="__main__":
 
     # Example code
-    fer = FER2013("../data/sample.csv")
-    # fer = FER2013("../data/icml_face_data.csv")
-    fer.showImage(img_id="00010")
-    # fer.showDistribution()
+    # fer = FER2013("../data/sample.csv")
+    fer = FER2013("../data/icml_face_data.csv")
+    # fer.showImage(img_id="00010")
+    fer.showDistribution()
 
