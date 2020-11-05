@@ -58,4 +58,4 @@ Followings are some useful references:
 - https://github.com/amineHorseman/facial-expression-recognition-using-cnn
 - https://github.com/amineHorseman/facial-expression-recognition-svm
 - [Multiclass precision](https://miopas.github.io/2019/04/17/multiple-classification-metrics/)
-
+- [Facial Expression Recognition using Convolutional Neural Networks: State of the Art](https://arxiv.org/pdf/1612.02903.pdf)
