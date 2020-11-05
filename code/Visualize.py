@@ -15,7 +15,7 @@ label2expression = {
 
 class Visualize:
 
-    def __init__(self, y_predicts, y_tests):
+    def __init__(self, y_predicts, y_tests, algo_name=""):
         """
         :param y_predicts: array of y_prediction, which is also an array of predicted label of each sample
         :param y_tests: array of y_true, which is also an array of true label of each sample
@@ -24,7 +24,7 @@ class Visualize:
         self.y_tests = y_tests
         assert len(y_predicts) == len(y_tests), "y test and y true size not match!"
         assert len(y_predicts) > 0, "Expect at least 1 y array, get 0!"
-
+        self.algo_name = algo_name
         self.num = len(y_predicts)
         print("Get {} Estimation(s).".format(self.num))
 
@@ -40,8 +40,11 @@ class Visualize:
         # use the mean value for each entry
         self.conf_mat = self.conf_mat / self.num
 
-    def plotConfusionMatrix(self, norm=False):
-        self.__genConfusionMatrix()
+    def plotConfusionMatrix(self, conf_matrix=None, norm=True):
+        if conf_matrix == None:
+            self.__genConfusionMatrix()
+        else:
+            self.conf_mat = conf_matrix
         if norm:
             self.conf_mat = self.conf_mat.astype('float') / self.conf_mat.sum(axis=1)[:, np.newaxis]
         print(self.conf_mat)
@@ -60,7 +63,8 @@ class Visualize:
         plt.title('Confusion Matrix')
         plt.ylabel('True Label')
         plt.xlabel('Predicted Label')
-        plt.show()
+        plt.savefig(''.join([self.algo_name + "ConfusionMatrix.pdf"]))
+        # plt.show()
 
     def plotAccuracy(self):
         plt.figure()
@@ -75,7 +79,7 @@ class Visualize:
         plt.xlabel('Sample Size')
         plt.ylabel('Accuracy')
         plt.title('Prediction Accuracy v.s. Training Sample Size')
-        plt.show()
+        # plt.show()
 
 if __name__ == "__main__":
     # sample y of true and prediction
@@ -86,7 +90,7 @@ if __name__ == "__main__":
     y_pred3 = [0, 2, 2, 4, 4, 4, 6]  # 4 correct
 
     # test confusion matrix
-    vis = Visualize([y_pred1, y_pred2, y_pred3], [y_true1] * 3)
-    vis.plotConfusionMatrix(norm=True)
+    vis = Visualize([y_pred1, y_pred2, y_pred3], [y_true1] * 3, "Test")
+    vis.plotConfusionMatrix()
 
-    vis.plotAccuracy()
+    # vis.plotAccuracy()
