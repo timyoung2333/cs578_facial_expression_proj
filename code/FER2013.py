@@ -63,7 +63,7 @@ class FER2013:
 
         # ============================================
         # facial landmark
-        img = np.uint8(np.asarray(self.X_dic[img_id]).reshape((48, 48)) / 255)
+        img = np.uint8(np.asarray(self.X_dic[img_id]).reshape((48, 48)))
         face_rect = dlib.rectangle(left=0, top=0, right=47, bottom=47)
         landmarks = self.dlib_predictor(img, face_rect)
 
@@ -181,14 +181,27 @@ class FER2013:
             subDataset[k] = self.getSubset(v[0:num])[0]
         return subDataset
 
-    def showImage(self, img_id):
+    def showImage(self, img_id, showLandmark=False):
         """
         Input: image id
         Output: none
         Show image on the screen.
         """
-        img = np.asarray(self.X_dic[img_id]).reshape((48, 48)) / 255
+        img = np.uint8(np.asarray(self.X_dic[img_id]).reshape((48, 48)))
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         text = "image: {}, label: {} ({})".format(img_id, self.getLabel(img_id), self.getExpression(img_id))
+
+        if showLandmark:
+            face_rect = dlib.rectangle(left=0, top=0, right=47, bottom=47)
+            landmarks = self.dlib_predictor(img, face_rect)
+
+            for i in range(68):
+                x = landmarks.part(i).x
+                y = landmarks.part(i).y
+                cv2.circle(img, (x, y), 1, (0, 255, 0), -1)
+
+            cv2.imwrite("{}_landmarks.png".format(img_id), img)
+
         cv2.imshow(text, img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
@@ -208,15 +221,15 @@ class FER2013:
 
 if __name__=="__main__":
 
-    fer = FER2013("../data/sample.csv")
-    fer.getVector(img_id="00000", encoding="landmarks")
-    fer.getVector(img_id="00000", encoding="Haar")
-    fer.getVector(img_id="00000", encoding="raw_pixels+landmarks")
+    # fer = FER2013("../data/sample.csv")
+    # fer.getVector(img_id="00000", encoding="landmarks")
+    # fer.getVector(img_id="00000", encoding="Haar")
+    # fer.getVector(img_id="00000", encoding="raw_pixels+landmarks")
 
-    # # Example code
-    # # fer = FER2013("../data/sample.csv")
+    # Example code
+    fer = FER2013("../data/sample.csv")
     # fer = FER2013("../data/icml_face_data.csv")
-    # # fer.showImage(img_id="00010")
+    fer.showImage(img_id="{:05d}".format(0), showLandmark=True)
     # fer.showDistribution()
 
     # # get image id for fig:fer-examples
