@@ -11,6 +11,7 @@
 4. Different algorithms, CNN, decision tree
 5. (Optional) PCA for dimension reduction (feature selection), AIC, BIC
 6. T-test for K-fold and bootstrapping (different algorithms, using best parameters)
+    - Kfold_Ttest_[algo].csv
 
 
 ## Link of dataset
