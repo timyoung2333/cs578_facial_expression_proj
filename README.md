@@ -4,7 +4,7 @@
 
 1. Tune hyperparameters (every algorithm)
 2. Experiments: Iteration times vs. accuracy, ROC, etc (google sheet)
-    - SVM_C1.csv, SVM_C10.csv
+    - SVM_C1.csv, SVM_C10.csv (",")
     - (Optional) Train_size: 50: 50: 450
     - Iteration_times: 50: 25: 500
 3. Different features (raw pixel, facial landmark, raw + facial)
