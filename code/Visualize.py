@@ -20,18 +20,22 @@ class Visualize:
         :param y_predicts: array of y_prediction, which is also an array of predicted label of each sample
         :param y_tests: array of y_true, which is also an array of true label of each sample
         """
-        self.y_predicts = y_predicts
-        self.y_tests = y_tests
-        assert len(y_predicts) == len(y_tests), "y test and y true size not match!"
-        assert len(y_predicts) > 0, "Expect at least 1 y array, get 0!"
+        self.set_y(y_predicts, y_tests)
         self.algo_name = algo_name
-        self.num = len(y_predicts)
-        print("Get {} Estimation(s).".format(self.num))
-
         self.labels = list(label2expression.keys())
         self.expressions = list(label2expression.values())
         self.label_num = len(self.labels)
         self.conf_mat = np.zeros([self.label_num, self.label_num])
+
+    def set_y(self, y_predicts, y_tests):
+        self.y_predicts = y_predicts
+        self.y_tests = y_tests
+        assert len(y_predicts) == len(y_tests), "y test and y true size not match!"
+        assert len(y_predicts) > 0, "Expect at least 1 y array, get 0!"
+        assert (y_predicts[i] == y_tests[i] for i in range(len(y_predicts))), \
+            "y test and y true should be of the same size in every fold!"
+        self.num = len(y_predicts)
+        print("Get {} Estimation(s).".format(self.num))
 
     def __genConfusionMatrix(self):
         for i in range(self.num):
@@ -40,13 +44,17 @@ class Visualize:
         # use the mean value for each entry
         self.conf_mat = self.conf_mat / self.num
 
-    def plotConfusionMatrix(self, conf_matrix=None, norm=True):
+    def __normalize(self, by_row=True):
+        ax = 1 if by_row else 0
+        self.conf_mat = self.conf_mat.astype('float') / self.conf_mat.sum(axis=ax)[:, np.newaxis]
+
+    def plotConfusionMatrix(self, conf_matrix=None, norm=True, save_path=''):
         if conf_matrix == None:
             self.__genConfusionMatrix()
         else:
             self.conf_mat = conf_matrix
         if norm:
-            self.conf_mat = self.conf_mat.astype('float') / self.conf_mat.sum(axis=1)[:, np.newaxis]
+            self.__normalize()
         print(self.conf_mat)
 
         plt.figure()
@@ -63,8 +71,11 @@ class Visualize:
         plt.title('Confusion Matrix')
         plt.ylabel('True Label')
         plt.xlabel('Predicted Label')
-        plt.savefig(''.join([self.algo_name + "ConfusionMatrix.pdf"]))
-        # plt.show()
+        if save_path != '':
+            plt.savefig(save_path)
+        else:
+            plt.savefig(''.join([self.algo_name + "ConfusionMatrix.pdf"]))
+            plt.show()
 
     def plotAccuracy(self):
         plt.figure()
