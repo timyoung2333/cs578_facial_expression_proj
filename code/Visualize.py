@@ -21,11 +21,11 @@ class Visualize:
         :param y_predicts: array of y_prediction, which is also an array of predicted label of each sample
         :param y_tests: array of y_true, which is also an array of true label of each sample
         """
-        self.set_y(y_predicts, y_tests)
         self.algo_name = algo_name
         self.labels = list(label2expression.keys())
         self.expressions = list(label2expression.values())
         self.label_num = len(self.labels)
+        self.set_y(y_predicts, y_tests)
 
     def set_y(self, y_predicts, y_tests):
         self.y_predicts = y_predicts
