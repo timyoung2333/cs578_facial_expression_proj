@@ -2,6 +2,7 @@ import itertools
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np
+import csv
 
 label2expression = {
             0: "Angry",
@@ -91,6 +92,12 @@ class Visualize:
         plt.ylabel('Accuracy')
         plt.title('Prediction Accuracy v.s. Training Sample Size')
         # plt.show()
+
+    def saveConfMat(self, path, param1, param2):
+        with open(path, 'a') as f:
+            csv_writer = csv.writer(f, dialect='excel')
+            csv_writer.writerow([param1, param2])
+            csv_writer.writerows(self.conf_mat)
 
 if __name__ == "__main__":
     # sample y of true and prediction
