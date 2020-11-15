@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 import sklearn.ensemble
+import sklearn.naive_bayes
+import sklearn.tree
 from FER2013 import FER2013
+import pickle
+import csv
+import numpy as np
 
 class AdaBoost(sklearn.ensemble.AdaBoostClassifier):
     """An AdaBoost classifier.
@@ -36,18 +41,41 @@ class AdaBoost(sklearn.ensemble.AdaBoostClassifier):
         """
         return super().score(X, y)
 
+    def staged_score(self, X, y):
+        return super(AdaBoost, self).staged_score(X, y)
+
 if __name__=="__main__":
 
-    # Example code
     fer = FER2013()
 
-    train_list = ["{:05d}".format(i) for i in range(20000)]
-    X_train, y_train = fer.getSubset(train_list)
+    from Evaluation import Evaluation
+    from Visualize import Visualize
 
-    test_list = ["{:05d}".format(i) for i in range(20000, 25000)]
-    X_test, y_test = fer.getSubset(test_list)
+    estimator_sizes = np.arange(50, 500+1, 25)  # 50, 75, 100, ..., 500
+    base_estimators = {"DecisionTreeClassifier_MaxDepth1": sklearn.tree.DecisionTreeClassifier(max_depth=1),
+                       "DecisionTreeClassifier_MaxDepth3": sklearn.tree.DecisionTreeClassifier(max_depth=3),
+                       "BernoulliNB": sklearn.naive_bayes.BernoulliNB(),
+                       "MultinomialNB": sklearn.naive_bayes.MultinomialNB(),
+                       "ExtraTreeClassifier": sklearn.tree.ExtraTreeClassifier()
+                       }
 
-    model = AdaBoost(n_estimators=100, random_state=0)
-    model.train(X_train, y_train)
-    print("mean accuracy:", model.score(X_test, y_test))
+    samples_per_expression = 500  # balanced sampling from all labels
+    k = 10  # k-fold Cross Validation
+    # traverse all types of weak learners and all max number of weak learners for each type
+    for key in base_estimators:
+        for estimator_size in estimator_sizes:
+            eva = Evaluation(fer, samples_per_expression)
+            model = AdaBoost(base_estimator=base_estimators[key], n_estimators=estimator_size, random_state=0)
+            y_train_pred, y_train_true, y_test_pred, y_test_true, scores = eva.kfoldCV(k, model)
+            f = open('../result/adaboost.csv', 'w')  # change to append later
+            csv_writer = csv.writer(f, dialect='excel')
+            csv_writer.writerow([key, estimator_size] + scores)
+            f.close()
+
+            vis = Visualize(y_test_pred, y_test_true, 'AdaBoost')
+            vis.plotConfusionMatrix(save_path='../result/AdaBoostConfMat' + str(key) + '_Iteration' + str(estimator_size) + '.pdf')
+
+
+
+
 
