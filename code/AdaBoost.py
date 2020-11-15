@@ -67,15 +67,16 @@ if __name__=="__main__":
             eva = Evaluation(fer, samples_per_expression)
             model = AdaBoost(base_estimator=base_estimators[key], n_estimators=estimator_size, random_state=0)
             y_train_pred, y_train_true, y_test_pred, y_test_true, scores = eva.kfoldCV(k, model)
-            f = open('../result/adaboost.csv', 'w')  # change to append later
+            # save all accuracy scores
+            f = open('../result/adaboost.csv', 'a')
             csv_writer = csv.writer(f, dialect='excel')
             csv_writer.writerow([key, estimator_size] + scores)
             f.close()
 
             vis = Visualize(y_test_pred, y_test_true, 'AdaBoost')
-            vis.plotConfusionMatrix(save_path='../result/AdaBoostConfMat' + str(key) + '_Iteration' + str(estimator_size) + '.pdf')
-
-
-
-
+            # save all confusion matrices to plot ROC
+            vis.saveConfMat('../result/AdaBoostConfMat.csv', str(key), str(estimator_size))
+            path = '../result/AdaBoostConfMat' + str(key) + '_Iteration' + str(estimator_size)
+            # save all confusion matrix as pdf
+            vis.plotConfusionMatrix(save_path=path + '.pdf')
 
