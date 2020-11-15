@@ -42,7 +42,10 @@ class AdaBoost(sklearn.ensemble.AdaBoostClassifier):
         return super().score(X, y)
 
     def staged_score(self, X, y):
-        return super(AdaBoost, self).staged_score(X, y)
+        return super().staged_score(X, y)
+
+    def predict_proba(self, X):
+        return super().predict_proba(X)
 
 if __name__=="__main__":
 
@@ -68,15 +71,15 @@ if __name__=="__main__":
             model = AdaBoost(base_estimator=base_estimators[key], n_estimators=estimator_size, random_state=0)
             y_train_pred, y_train_true, y_test_pred, y_test_true, scores = eva.kfoldCV(k, model)
             # save all accuracy scores
-            f = open('../result/adaboost.csv', 'a')
+            f = open('../result/AdaBoost/adaboost.csv', 'a')
             csv_writer = csv.writer(f, dialect='excel')
             csv_writer.writerow([key, estimator_size] + scores)
             f.close()
 
             vis = Visualize(y_test_pred, y_test_true, 'AdaBoost')
-            path = '../result/AdaBoostConfMat' + str(key) + '_Iteration' + str(estimator_size)
+            path = '../result/AdaBoost/AdaBoostConfMat' + str(key) + '_Iteration' + str(estimator_size)
             # save all confusion matrix as pdf
             vis.plotConfusionMatrix(save_path=path + '.pdf')
             # save all confusion matrices to plot ROC, used after plot conf mat method
-            vis.saveConfMat('../result/AdaBoostConfMat.csv', str(key), str(estimator_size))
+            vis.saveConfMat('../result/AdaBoost/AdaBoostConfMat.csv', str(key), str(estimator_size))
 
