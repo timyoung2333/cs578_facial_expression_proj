@@ -26,7 +26,6 @@ class Visualize:
         self.labels = list(label2expression.keys())
         self.expressions = list(label2expression.values())
         self.label_num = len(self.labels)
-        self.conf_mat = np.zeros([self.label_num, self.label_num])
 
     def set_y(self, y_predicts, y_tests):
         self.y_predicts = y_predicts
@@ -40,6 +39,7 @@ class Visualize:
         self.__genConfusionMatrix()
 
     def __genConfusionMatrix(self):
+        self.conf_mat = np.zeros([self.label_num, self.label_num])
         for i in range(self.num):
             mat = confusion_matrix(self.y_tests[i], self.y_predicts[i])
             self.conf_mat = self.conf_mat + mat
