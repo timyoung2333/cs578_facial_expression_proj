@@ -10,14 +10,12 @@ import os
 import random
 from FER2013 import FER2013
 from Perceptron import Perceptron
-# from Adaboost import AdaBoost
 from AdaBoost import AdaBoost
 from MLP import MLP
 from SVM import SVM
 from Visualize import Visualize
 import matplotlib.pyplot as plt
 import csv
-import pandas as pd
 
 class Evaluation:
 
