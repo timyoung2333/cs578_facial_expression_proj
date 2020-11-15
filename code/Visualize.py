@@ -37,6 +37,7 @@ class Visualize:
             "y test and y true should be of the same size in every fold!"
         self.num = len(y_predicts)
         print("Get {} Estimation(s).".format(self.num))
+        self.__genConfusionMatrix()
 
     def __genConfusionMatrix(self):
         for i in range(self.num):
@@ -50,9 +51,7 @@ class Visualize:
         self.conf_mat = self.conf_mat.astype('float') / self.conf_mat.sum(axis=ax)[:, np.newaxis]
 
     def plotConfusionMatrix(self, conf_matrix=None, norm=True, save_path=''):
-        if conf_matrix == None:
-            self.__genConfusionMatrix()
-        else:
+        if conf_matrix is not None:
             self.conf_mat = conf_matrix
         if norm:
             self.__normalize()

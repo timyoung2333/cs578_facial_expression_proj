@@ -74,9 +74,9 @@ if __name__=="__main__":
             f.close()
 
             vis = Visualize(y_test_pred, y_test_true, 'AdaBoost')
-            # save all confusion matrices to plot ROC
-            vis.saveConfMat('../result/AdaBoostConfMat.csv', str(key), str(estimator_size))
             path = '../result/AdaBoostConfMat' + str(key) + '_Iteration' + str(estimator_size)
             # save all confusion matrix as pdf
             vis.plotConfusionMatrix(save_path=path + '.pdf')
+            # save all confusion matrices to plot ROC, used after plot conf mat method
+            vis.saveConfMat('../result/AdaBoostConfMat.csv', str(key), str(estimator_size))
 
