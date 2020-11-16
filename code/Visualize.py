@@ -120,55 +120,6 @@ class Visualize:
                     print('Read to eof, have {} confusion matrices!'.format(len(self.__conf_mats)))
                     break
 
-    # Wrong implementation of ROC plot, could be removed in the future
-    def plotWrong(self, by_param1_param, by_param2_param):
-        pa1 = str(by_param1_param)
-        pa2 = str(by_param2_param)
-        assert (pa1 == '') ^ (pa2 == ''), '2 params specified cannot be both empty or non-empty!'
-        pa, idx = (pa1, 1) if pa1 != '' else (pa2, 0)
-        mats = [mat_tuple(2) for mat_tuple in self.__conf_mats if pa in mat_tuple]
-        params = [mat_tuple(idx) for mat_tuple in self.__conf_mats if pa in mat_tuple]
-        assert len(mats) == len(params), 'Size not match!'
-        if len(mats) == 0:
-            print('There is no matrix matching the param {}'.format(pa))
-            return
-
-        tpr_all = []  # True Positive Rate for all mats
-        fpr_all = []  # False Positive Rate for all mats
-        for mat in mats:
-            mat_arr = np.array(mat)
-            tpr_per_mat = []  # True Positive Rate for all labels of one mat
-            fpr_per_mat = []  # False Positive Rate for all labels of one mat
-            for i in range(self.label_num):
-                tpr_per_mat.append(mat_arr[i, i])
-                fpr_per_mat.append((sum(mat_arr[:, i]) - tpr_per_mat[-1]) / (self.label_num - 1))
-            tpr_all.append(tpr_per_mat)
-            fpr_all.append(fpr_per_mat)
-        # m-by-n matrix, where m is number of matrices(models), n is number of labels
-        tpr_all = np.array(tpr_all)
-        fpr_all = np.array(fpr_all)
-
-        # plot ROC for every label into one figure
-        plt.figure()
-        for i in range(self.label_num):
-            # sort by fpr
-            tpr_arr = tpr_all[:, i]
-            fpr_arr = fpr_all[:, i]
-            inds = fpr_arr.argsort()
-            fpr_arr = fpr_arr[inds]
-            tpr_arr = tpr_arr[inds]
-            plt.plot(fpr_arr, tpr_arr)
-
-        # can use [0, 1] range if data can span that much
-        # plt.xticks(np.arange(0, 1.1, 0.1))
-        # plt.yticks(np.arange(0, 1.1, 0.1))
-        # plt.plot([0, 1], [0, 1], linestyle='--')
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC for {} with {} fixed'.format(self.algo_name, pa))
-        plt.legend(self.expressions)
-        plt.show()
-
     def plotRocCurve(self, y_true, y_pred_prob, show_all=True):
         """
         Used to plot ROC curve for single model's single prediction, can show curves of all labels, as well as their
