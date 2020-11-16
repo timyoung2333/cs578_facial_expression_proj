@@ -77,6 +77,7 @@ class Visualize:
         plt.title('Confusion Matrix')
         plt.ylabel('True Label')
         plt.xlabel('Predicted Label')
+        plt.tight_layout()
         if save_path != '':
             plt.savefig(save_path)
         else:
@@ -155,9 +156,10 @@ class Visualize:
         plt.ylabel('True Positive Rate')
         plt.title('Receiver Operating Characteristic of {}-label Multi-class Prediction of {}'.format(self.label_num, self.algo_name))
         plt.legend(loc="lower right")
+        plt.tight_layout()
         plt.show()
 
-    def plotCVRocCurve(self, y_trues, y_scores, show_all=True):
+    def plotCVRocCurve(self, y_trues, y_scores, show_all=True, save_path=''):
         """
         Used to plot ROC curve of single model's multiple predictions, like cross validation.
         Example Usage:
@@ -169,6 +171,7 @@ class Visualize:
         :param y_trues: n-by-k multi-class true labels of k y_test, each of n samples
         :param y_scores: n-by-d-by-k multi-class prediction probabilities of k y_test, each of n samples
         :param show_all: True if want to show ROC curve for each fold, False if only want to show the mean ROC curve
+        :param save_path: path to save the plot as a figure
         :return: None
         """
         # get k of k-fold cross validation
@@ -204,7 +207,11 @@ class Visualize:
         plt.ylabel('True Positive Rate')
         plt.title('Receiver Operating Characteristic of {}-fold Cross Validation of {}'.format(K, self.algo_name))
         plt.legend(loc="lower right")
-        plt.show()
+        plt.tight_layout()
+        if save_path != '':
+            plt.savefig(save_path)
+        else:
+            plt.show()
 
     # todo
     # show ROC curves of multiples cross-validated models in one graph
