@@ -36,7 +36,7 @@ class CNN(nn.Module):
         x = self.fc3(x)
         return x
 
-    def train(self, X, y, epoch_num=1000):
+    def train(self, X, y, epoch_num=500):
 
         inputs = torch.Tensor(X.reshape((len(X), 1, 48, 48)))
         labels = torch.Tensor(y)
@@ -79,14 +79,29 @@ class CNN(nn.Module):
 
         return predicted.cpu().numpy()
 
+    def score(self, X, y):
+        """
+        Input: matrix X of features, with n rows (samples), d columns (features)
+                   X(i,j) is the j-th feature of the i-th sample
+               vector y of labels, with n rows (samples), 1 column
+                   y(i) is the label (+1 or -1) of the i-th sample
+        Output: scalar, mean accurary on the test set [X, y]
+        """
+        y_hat = self.predict(X)
+        return sum(y == y_hat) / len(y)
+
 if __name__ == "__main__":
 
-    fer = FER2013("../data/sample.csv")
+    # Sample code
+    fer = FER2013()
 
-    train_list = ["{:05d}".format(i) for i in range(100)]
+    train_list = ["{:05d}".format(i) for i in range(20000)]
     X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
 
-    cnn = CNN()
-    cnn.train(X_train, y_train)
-    y_hat = cnn.predict(X_train)
-    print("mean accuracy:", sum(y_train == y_hat) / len(y_train))
+    test_list = ["{:05d}".format(i) for i in range(20000, 25000)]
+    X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
+
+    model = CNN()
+    model.train(X_train, y_train)
+    print("mean accuracy (train):", model.score(X_train, y_train))
+    print("mean accuracy (test):", model.score(X_test, y_test))
