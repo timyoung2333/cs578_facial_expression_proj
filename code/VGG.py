@@ -120,7 +120,7 @@ if __name__ == "__main__":
     train_list = ["{:05d}".format(i) for i in range(1000)]
     X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
 
-    test_list = ["{:05d}".format(i) for i in range(8000, 1000)]
+    test_list = ["{:05d}".format(i) for i in range(800, 1000)]
     X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
 
     model = VGG()
