@@ -47,12 +47,22 @@ class AdaBoost(sklearn.ensemble.AdaBoostClassifier):
     def predict_proba(self, X):
         return super().predict_proba(X)
 
+    def decision_func(self, X):
+        return super().decision_function(X)
+
 if __name__=="__main__":
 
     fer = FER2013()
-
     from Evaluation import Evaluation
     from Visualize import Visualize
+
+    # example code to fast test ROC curve for a single model
+    # eva = Evaluation(fer, 500)
+    # model = AdaBoost()
+    # y_train_pred, y_train_true, y_test_pred, y_test_true, scores = eva.kfoldCV(10, model, proba=True)
+    # vis = Visualize(algo_name='AdaBoost')
+    # vis.plotCVRocCurve(y_test_true, y_test_pred, show_all=True)
+    # exit(0)
 
     estimator_sizes = np.arange(50, 500+1, 25)  # 50, 75, 100, ..., 500
     base_estimators = {"DecisionTreeClassifier_MaxDepth1": sklearn.tree.DecisionTreeClassifier(max_depth=1),
