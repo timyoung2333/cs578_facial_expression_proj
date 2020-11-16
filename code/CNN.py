@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# The class of CNN
-# Reference: https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
 from FER2013 import FER2013
 import torch
 import torchvision
@@ -11,6 +9,10 @@ import torch.optim as optim
 from tqdm import tqdm
 
 class CNN(nn.Module):
+    """Convolutional neural network
+
+    Reference: https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
+    """
 
     def __init__(self):
         super(CNN, self).__init__()
@@ -33,17 +35,18 @@ class CNN(nn.Module):
         x = self.fc3(x)
         return x
 
-    def train(self, trainset, batch_size=256, epoch_num=100):
+    def train(self, X, y, batch_size=256, epoch_num=100):
 
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                              shuffle=True, num_workers=2)
+        dataset = torch.utils.data.TensorDataset(torch.Tensor(X), torch.Tensor(y))
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, num_workers=2)
+
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
 
         for epoch in range(epoch_num):  # loop over the dataset multiple times
 
             epoch_loss = 0
-            for i, data in enumerate(trainloader, 0):
+            for i, data in enumerate(dataloader, 0):
                 # get the inputs; data is a list of [inputs, labels]
                 # inputs, labels = data
                 inputs, labels = data[0].to(self.device), data[1].to(self.device)
@@ -60,7 +63,7 @@ class CNN(nn.Module):
                 epoch_loss += loss.item()
 
             # print loss
-            print("epoch: {}, loss: {:.3f}".format(epoch, epoch_loss/len(trainloader)))
+            print("epoch: {}, loss: {:.3f}".format(epoch, epoch_loss/len(dataloader)))
 
         print('Finished Training')
 
@@ -82,28 +85,31 @@ class CNN(nn.Module):
     #     return predicted
 
 def main():
-    # fer = FER2013("../data/sample.csv")
-    # print(fer.getX(0))
 
-    transform = transforms.Compose(
-        [transforms.ToTensor(),
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    # transform = transforms.Compose(
+    #     [transforms.ToTensor(),
+    #      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-    trainset = torchvision.datasets.CIFAR10(root='./tmp', train=True,
-                                            download=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
-                                              shuffle=True, num_workers=2)
+    # trainset = torchvision.datasets.CIFAR10(root='./tmp', train=True,
+    #                                         download=True, transform=transform)
+    # trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
+    #                                           shuffle=True, num_workers=2)
 
-    testset = torchvision.datasets.CIFAR10(root='./tmp', train=False,
-                                           download=True, transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=4,
-                                             shuffle=False, num_workers=2)
+    # testset = torchvision.datasets.CIFAR10(root='./tmp', train=False,
+    #                                        download=True, transform=transform)
+    # testloader = torch.utils.data.DataLoader(testset, batch_size=4,
+    #                                          shuffle=False, num_workers=2)
 
-    classes = ('plane', 'car', 'bird', 'cat',
-               'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+    # classes = ('plane', 'car', 'bird', 'cat',
+    #            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
+    fer = FER2013("../data/sample.csv")
+
+    train_list = ["{:05d}".format(i) for i in range(100)]
+    X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels+landmarks")
 
     cnn = CNN()
-    cnn.train(trainset)
+    cnn.train(X_train, y_train)
     cnn.save()
     # cnn.predict(trainset)
 
