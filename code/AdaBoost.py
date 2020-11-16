@@ -74,7 +74,7 @@ if __name__=="__main__":
     #
     # exit(0)
 
-    estimator_sizes = np.arange(50, 500+1, 25)  # 50, 75, 100, ..., 500
+    estimator_sizes = np.arange(50, 500+1, 50)  # 50, 75, 100, ..., 500
     base_estimators = {"DecisionTreeClassifier_MaxDepth1": sklearn.tree.DecisionTreeClassifier(max_depth=1),
                        "DecisionTreeClassifier_MaxDepth3": sklearn.tree.DecisionTreeClassifier(max_depth=3),
                        "BernoulliNB": sklearn.naive_bayes.BernoulliNB(),
