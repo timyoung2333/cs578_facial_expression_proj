@@ -14,7 +14,6 @@ class VGG(nn.Module):
 
     Reference: https://github.com/pytorch/vision.git
     """
-
     def __init__(self):
         super(VGG, self).__init__()
         self.features = self.make_layers([64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'])
@@ -35,7 +34,7 @@ class VGG(nn.Module):
                 m.weight.data.normal_(0, math.sqrt(2. / n))
                 m.bias.data.zero_()
 
-        self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.to(self.device)
 
     def forward(self, x):
@@ -118,10 +117,10 @@ if __name__ == "__main__":
     # # Sample code
     fer = FER2013()
 
-    train_list = ["{:05d}".format(i) for i in range(8000)]
+    train_list = ["{:05d}".format(i) for i in range(1000)]
     X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
 
-    test_list = ["{:05d}".format(i) for i in range(8000, 10000)]
+    test_list = ["{:05d}".format(i) for i in range(8000, 1000)]
     X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
 
     model = VGG()
