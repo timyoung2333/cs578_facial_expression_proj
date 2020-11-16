@@ -86,7 +86,7 @@ class Evaluation:
             cf_matrix[em] = np.divide(cf_matrix[em], np.sum(cf_matrix[em]))
         return train_acc, test_acc, cf_matrix
 
-    def kfoldCV(self, k, model):
+    def kfoldCV(self, k, model, proba=False):
         y_train_pred = []
         y_train_true = []
         y_test_pred = []
@@ -97,8 +97,12 @@ class Evaluation:
             y_train_true.append(y_train)
             y_test_true.append(y_test)
             model.train(X_train, y_train)
-            y_train_pred.append(model.predict(X_train))
-            y_test_pred.append(model.predict(X_test))
+            if proba:
+                y_train_pred.append(model.predict_proba(X_train))
+                y_test_pred.append(model.predict_proba(X_test))
+            else:
+                y_train_pred.append(model.predict(X_train))
+                y_test_pred.append(model.predict(X_test))
             scores.append(model.score(X_test, y_test))
         return y_train_pred, y_train_true, y_test_pred, y_test_true, scores
 

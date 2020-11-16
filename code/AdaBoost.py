@@ -47,14 +47,34 @@ class AdaBoost(sklearn.ensemble.AdaBoostClassifier):
     def predict_proba(self, X):
         return super().predict_proba(X)
 
+    def decision_func(self, X):
+        return super().decision_function(X)
+
 if __name__=="__main__":
 
     fer = FER2013()
-
     from Evaluation import Evaluation
     from Visualize import Visualize
 
-    estimator_sizes = np.arange(50, 500+1, 25)  # 50, 75, 100, ..., 500
+    # example code to fast test ROC curve and confusion matrix for a single model
+    # test_conf_mat = True
+    # test_roc_curve = False
+    # eva = Evaluation(fer, 100)
+    # model = AdaBoost()
+    #
+    # if test_roc_curve:
+    #     y_train_pred, y_train_true, y_test_pred, y_test_true, scores = eva.kfoldCV(10, model, proba=True)
+    #     vis = Visualize(algo_name='AdaBoost')
+    #     vis.plotCVRocCurve(y_test_true, y_test_pred, show_all=True, save_path='../result/AdaBoost/test_roc_curve.pdf')
+    #
+    # if test_conf_mat:
+    #     y_train_pred, y_train_true, y_test_pred, y_test_true, scores = eva.kfoldCV(10, model, proba=False)
+    #     vis = Visualize(y_test_pred, y_test_true, algo_name='AdaBoost')
+    #     vis.plotConfusionMatrix(save_path='../result/AdaBoost/test_conf_mat.pdf')
+    #
+    # exit(0)
+
+    estimator_sizes = np.arange(50, 500+1, 50)  # 50, 75, 100, ..., 500
     base_estimators = {"DecisionTreeClassifier_MaxDepth1": sklearn.tree.DecisionTreeClassifier(max_depth=1),
                        "DecisionTreeClassifier_MaxDepth3": sklearn.tree.DecisionTreeClassifier(max_depth=3),
                        "BernoulliNB": sklearn.naive_bayes.BernoulliNB(),
@@ -63,6 +83,9 @@ if __name__=="__main__":
                        }
 
     samples_per_expression = 500  # balanced sampling from all labels
+    # todo
+    # vary number of total samples
+
     k = 10  # k-fold Cross Validation
     # traverse all types of weak learners and all max number of weak learners for each type
     for key in base_estimators:
