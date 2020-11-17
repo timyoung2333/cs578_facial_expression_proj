@@ -159,7 +159,7 @@ class Visualize:
         plt.tight_layout()
         plt.show()
 
-    def plotCVRocCurve(self, y_trues, y_scores, show_all=True, save_path=''):
+    def plotCVRocCurve(self, y_trues, y_scores, show_all=True, save_fig_path='', save_coords_path=''):
         """
         Used to plot ROC curve of single model's multiple predictions, like cross validation.
         Example Usage:
@@ -172,6 +172,7 @@ class Visualize:
         :param y_scores: n-by-d-by-k multi-class prediction probabilities of k y_test, each of n samples
         :param show_all: True if want to show ROC curve for each fold, False if only want to show the mean ROC curve
         :param save_path: path to save the plot as a figure
+        :param save_coords_path: path to save cross-validated mean coordinates of ROC curve
         :return: None
         """
         # get k of k-fold cross validation
@@ -196,6 +197,11 @@ class Visualize:
                 plt.plot(all_fpr, mean_tpr, lw=2, label='ROC curve of fold {0} (area = {1:0.2f})'.format(fold, auc))
         # get interpolated averaged ROC curve of all folds
         cv_fprs, cv_tprs = self.interpMeanRocCurve(all_fprs, all_tprs)
+        if save_coords_path != '':
+            with open(save_coords_path, 'a') as f:
+                csv_writer = csv.writer(f, dialect='excel')
+                csv_writer.writerow(cv_fprs)
+                csv_writer.writerow(cv_tprs)
         auc = self.aucByRate(cv_fprs, cv_tprs)
         plt.plot(cv_fprs, cv_tprs, label='macro-average ROC curve (area = {0:0.2f})'.format(auc),
                  color='navy', linestyle=':', linewidth=4)
@@ -208,8 +214,8 @@ class Visualize:
         plt.title('Receiver Operating Characteristic of {}-fold Cross Validation of {}'.format(K, self.algo_name))
         plt.legend(loc="lower right")
         plt.tight_layout()
-        if save_path != '':
-            plt.savefig(save_path)
+        if save_fig_path != '':
+            plt.savefig(save_fig_path)
         else:
             plt.show()
 
