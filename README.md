@@ -1,5 +1,13 @@
 # CS578-Project
 
+## Plots/Tables related todo list
+1. Tune hyperparams (train and save by gridSearchCrossValidation, plot by loading from csv): e.g. iteration and learning rate for AdaBoost; plot accuracy of different learning rates v.s. iteration number, can view the trend, can get the optimal choice of hyperparams by inspection; other algorithms having more than 2 hyperparams could generate a table instead of a plot (1 graph/table per model)
+2. Based on the optimal hyperparams, exploit the relationship btw subset size and accuracy (load from different csv, assume raw feature encoding) by plot of training accuracy and test accuracy v.s. subset size, can evaluate perfect fit and generalization issues w.r.t subset size (1 graph per model)
+3. Generate both cross-validated and Bootstrapped confusion matrices for each best tuned model (with the same subset size, assume the same raw feature encoding method here), to give a direct impression of overall multi-label accuracy, as well as true positives and false positives of different labels of each model; also expect similar matrices from cv and bootstrap, if not, still need to explain (2 graphs per model);
+Besides, optionally, could generate 1 roc plot per mode, each plot contains roc curves for all labels, can mutually verify different prediction accuracy of different labels with confusion matrices
+4. Generate bar plot of accuracy v.s. best tuned 3 algorithms of different (2 as discussed) feature encoding methods (of course the same subset size), expect to see a superior one to justify the improved encoding method (1 graph for all models)
+5. Generate roc curves from 3 (or more) best tuned algorithms with the same subset size and the same feature encoding method, to explain the performance rank of different algorithms on this (sub)dataset (1 graph for all models)
+
 ## To-do list
 
 1. Tune hyperparameters (every algorithm)
