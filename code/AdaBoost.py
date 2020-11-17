@@ -7,6 +7,7 @@ import pickle
 import csv
 import numpy as np
 
+
 class AdaBoost(sklearn.ensemble.AdaBoostClassifier):
     """An AdaBoost classifier.
 
@@ -50,7 +51,11 @@ class AdaBoost(sklearn.ensemble.AdaBoostClassifier):
     def decision_func(self, X):
         return super().decision_function(X)
 
-if __name__=="__main__":
+    def set_params(self, **params):
+        return super().set_params(params)
+
+
+if __name__ == "__main__":
 
     fer = FER2013()
     from Evaluation import Evaluation
@@ -74,7 +79,7 @@ if __name__=="__main__":
     #
     # exit(0)
 
-    estimator_sizes = np.arange(50, 500+1, 50)  # 50, 75, 100, ..., 500
+    estimator_sizes = np.arange(50, 500 + 1, 50)  # 50, 75, 100, ..., 500
     base_estimators = {"DecisionTreeClassifier_MaxDepth1": sklearn.tree.DecisionTreeClassifier(max_depth=1),
                        "DecisionTreeClassifier_MaxDepth3": sklearn.tree.DecisionTreeClassifier(max_depth=3),
                        "BernoulliNB": sklearn.naive_bayes.BernoulliNB(),
@@ -105,4 +110,3 @@ if __name__=="__main__":
             vis.plotConfusionMatrix(save_path=path + '.pdf')
             # save all confusion matrices to plot ROC, used after plot conf mat method
             vis.saveConfMat('../result/AdaBoost/AdaBoostConfMat.csv', str(key), str(estimator_size))
-
