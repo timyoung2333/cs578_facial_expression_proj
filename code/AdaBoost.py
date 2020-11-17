@@ -51,62 +51,62 @@ class AdaBoost(sklearn.ensemble.AdaBoostClassifier):
     def decision_func(self, X):
         return super().decision_function(X)
 
-    def set_params(self, **params):
-        return super().set_params(params)
+    def set_params(self, params):
+        return super().set_params(**params)
 
 
 if __name__ == "__main__":
 
-    fer = FER2013()
+    fer = FER2013(filename='../data/subset3500.csv')
     from Evaluation import Evaluation
     from Visualize import Visualize
 
     # example code to fast test ROC curve and confusion matrix for a single model
     # test_conf_mat = True
-    # test_roc_curve = False
+    # test_roc_curve = True
     # eva = Evaluation(fer, 100)
     # model = AdaBoost()
-    #
     # if test_roc_curve:
     #     y_train_pred, y_train_true, y_test_pred, y_test_true, scores = eva.kfoldCV(10, model, proba=True)
     #     vis = Visualize(algo_name='AdaBoost')
-    #     vis.plotCVRocCurve(y_test_true, y_test_pred, show_all=True, save_path='../result/AdaBoost/test_roc_curve.pdf')
-    #
+    #     vis.plotCVRocCurve(y_test_true, y_test_pred, show_all=True,
+    #                        save_fig_path='../result/AdaBoost/roc_curve.pdf',
+    #                        save_coords_path='../result/AdaBoost/roc_coords.csv')
     # if test_conf_mat:
     #     y_train_pred, y_train_true, y_test_pred, y_test_true, scores = eva.kfoldCV(10, model, proba=False)
-    #     vis = Visualize(y_test_pred, y_test_true, algo_name='AdaBoost')
-    #     vis.plotConfusionMatrix(save_path='../result/AdaBoost/test_conf_mat.pdf')
-    #
+    #     vis = Visualize(algo_name='AdaBoost')
+    #     vis.set_y(y_test_pred, y_test_true)
+    #     vis.plotConfusionMatrix(save_path='../result/AdaBoost/conf_mat.pdf')
+    #     vis.saveConfMat('../result/AdaBoost/AdaBoostConfMat.csv', 'DecisionTreeClassifier_Depth1', 50)
     # exit(0)
 
-    estimator_sizes = np.arange(50, 500 + 1, 50)  # 50, 75, 100, ..., 500
+    # May just use DecisionTreeClassifier later
     base_estimators = {"DecisionTreeClassifier_MaxDepth1": sklearn.tree.DecisionTreeClassifier(max_depth=1),
-                       "DecisionTreeClassifier_MaxDepth3": sklearn.tree.DecisionTreeClassifier(max_depth=3),
                        "BernoulliNB": sklearn.naive_bayes.BernoulliNB(),
                        "MultinomialNB": sklearn.naive_bayes.MultinomialNB(),
                        "ExtraTreeClassifier": sklearn.tree.ExtraTreeClassifier()
                        }
 
-    samples_per_expression = 500  # balanced sampling from all labels
-    # todo
-    # vary number of total samples
+    # Parameter tuning: 60 models in total for each dataset
+    estimator_sizes = np.arange(50, 500 + 1, 50)  # 50, 100, 150, ..., 500
+    learning_rates = np.logspace(-3, 2, 6, base=10)  # 0.001, 0.01, ..., 100
+    params = {'n_estimators': estimator_sizes, 'learning_rate': learning_rates}
 
+    # Subset size: 10 subset data sizes
+    samples_per_expression = np.arange(50, 500 + 1, 50)  # balanced sampling from all labels
+
+    # Feature encoding
+    feature_encoding_methods = ['raw_pixels', 'raw_pixels+landmarks']
+
+    # Train models by cross validation and save results
     k = 10  # k-fold Cross Validation
-    # traverse all types of weak learners and all max number of weak learners for each type
-    for key in base_estimators:
-        for estimator_size in estimator_sizes:
-            eva = Evaluation(fer, samples_per_expression)
-            model = AdaBoost(base_estimator=base_estimators[key], n_estimators=estimator_size, random_state=0)
-            y_train_pred, y_train_true, y_test_pred, y_test_true, scores = eva.kfoldCV(k, model)
-            # save all accuracy scores
-            f = open('../result/AdaBoost/adaboost.csv', 'a')
-            csv_writer = csv.writer(f, dialect='excel')
-            csv_writer.writerow([key, estimator_size] + scores)
-            f.close()
-
-            vis = Visualize(y_test_pred, y_test_true, 'AdaBoost')
-            path = '../result/AdaBoost/AdaBoostConfMat' + str(key) + '_Iteration' + str(estimator_size)
-            # save all confusion matrix as pdf
-            vis.plotConfusionMatrix(save_path=path + '.pdf')
-            # save all confusion matrices to plot ROC, used after plot conf mat method
-            vis.saveConfMat('../result/AdaBoost/AdaBoostConfMat.csv', str(key), str(estimator_size))
+    for encoding in feature_encoding_methods:
+        for subset_size in samples_per_expression:
+            eva = Evaluation(fer, subset_size, encoding)
+            model = AdaBoost()
+            eva.gridSearchCV(k, model, param_grid=params,
+                             save_path='../result/AdaBoost/{0}-subset{1}.csv'.format(encoding, subset_size))
+            print('Finished training for subset size {} of all parameters!'.format(subset_size))
+        print('Finished training for feature encoding {} of all subset sizes and parameters!'.format(encoding))
+    # Visualization
+    # todo load and display
