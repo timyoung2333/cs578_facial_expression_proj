@@ -20,12 +20,12 @@ import csv
 
 class Evaluation:
 
-    def __init__(self, raw_data, subset_size): # You may change the directory to make the code work
+    def __init__(self, raw_data, subset_size, encoding='raw_pixels'): # You may change the directory to make the code work
         """
         Load data
         """
         self.fer = raw_data
-        self.subDataset = self.fer.getSubDataset(subset_size)
+        self.subDataset = self.fer.getSubDataset(subset_size, encoding)
         self.num = subset_size
         self.label2expression = {
             0: "Angry",
