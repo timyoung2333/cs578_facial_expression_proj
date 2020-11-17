@@ -125,14 +125,54 @@ class Evaluation:
             key_test = list(params.values()) + ['Test']
             self.params_accu_dict[tuple(key_train)] = train_sc
             self.params_accu_dict[tuple(key_test)] = test_sc
-            if save_path != '':
+            if save_path:
                 # save the params and k-fold train & test scores as 2 lines into the .csv file
                 with open(save_path, 'a') as f:
                     writer = csv.writer(f, dialect='excel')
-                    writer.writerow(key_train + train_sc)
-                    writer.writerow(key_test + test_sc)
-        print('Write all cv scores to file finished!')
+                    writer.writerow(key_train + list(np.round(train_sc, 2)))
+                    writer.writerow(key_test + list(np.round(test_sc, 2)))
+        if save_path:
+            print('Write all cv scores to file finished!')
 
+    def getScores(self, get_test=True):
+        result = {}
+        if not self.params_accu_dict:
+            print('There is no scores, train by cross validation first!')
+            return result
+        target = 'Test' if get_test else 'Train'
+        for k, v in self.params_accu_dict.items():
+            if k[-1] == target:
+                result[k] = v
+        if not result:
+            print('There is no {} data, something is wrong!'.format(target))
+        return result
+
+    def getMeanScores(self, get_test=True):
+        result = {}
+        if not self.params_accu_dict:
+            print('There is no scores, train by cross validation first!')
+            return result
+        target = 'Test' if get_test else 'Train'
+        for k, v in self.params_accu_dict.items():
+            if k[-1] == target:
+                result[k] = np.mean(v)
+        if not result:
+            print('There is no {} data, something is wrong!'.format(target))
+        return result
+
+    def getBestModelAndScore(self, get_test=True):
+        if not self.params_accu_dict:
+            print('There is no scores, train by cross validation first!')
+            return ()
+        max_mean_score = 0
+        best_model = ()
+        target = 'Test' if get_test else 'Train'
+        for k, v in self.params_accu_dict.items():
+            if k[-1] == target:
+                mean_score = np.mean(v)
+                max_mean_score = max(max_mean_score, mean_score)
+                best_model = k
+        return best_model, max_mean_score
 
     # def bootstrappingSplit(self):
         
