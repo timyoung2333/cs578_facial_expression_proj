@@ -171,7 +171,7 @@ class Visualize:
         :param y_trues: n-by-k multi-class true labels of k y_test, each of n samples
         :param y_scores: n-by-d-by-k multi-class prediction probabilities of k y_test, each of n samples
         :param show_all: True if want to show ROC curve for each fold, False if only want to show the mean ROC curve
-        :param save_path: path to save the plot as a figure
+        :param save_fig_path: path to save the plot as a figure
         :param save_coords_path: path to save cross-validated mean coordinates of ROC curve
         :return: None
         """
