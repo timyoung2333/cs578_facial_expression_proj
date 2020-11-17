@@ -38,7 +38,7 @@ class AdaBoost(sklearn.ensemble.AdaBoostClassifier):
                    X(i,j) is the j-th feature of the i-th sample
                vector y of labels, with n rows (samples), 1 column
                    y(i) is the label (+1 or -1) of the i-th sample
-        Output: scalar, mean accurary on the test set [X, y]
+        Output: scalar, mean accuracy on the test set [X, y]
         """
         return super().score(X, y)
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     # Parameter tuning: 60 models in total for each dataset
     estimator_sizes = np.arange(50, 500 + 1, 50)  # 50, 100, 150, ..., 500
-    learning_rates = np.logspace(-3, 2, 6, base=10)  # 0.001, 0.01, ..., 100
+    learning_rates = np.logspace(-3, 1, 5, base=10)  # 0.001, 0.01, ..., 10
     params = {'n_estimators': estimator_sizes, 'learning_rate': learning_rates}
 
     # Subset size: 10 subset data sizes
@@ -108,5 +108,7 @@ if __name__ == "__main__":
                              save_path='../result/AdaBoost/{0}-subset{1}.csv'.format(encoding, subset_size))
             print('Finished training for subset size {} of all parameters!'.format(subset_size))
         print('Finished training for feature encoding {} of all subset sizes and parameters!'.format(encoding))
+    print('Finished all the training, congratulations!')
+
     # Visualization
     # todo load and display
