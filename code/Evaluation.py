@@ -114,9 +114,10 @@ class Evaluation:
             return
         # train each model with different params and get cross-validated scores
         param_grid = ParameterGrid(param_grid)
-        for params in param_grid:
-            model.set_params(**params)
+        for params in tqdm(param_grid):
+            model.set_params(params)
             _, _, _, _, sc = self.kfoldCV(k, model)
+            print('Finished cross validation for model {}'.format(tuple(params.items())))
             self.params_accu_dict[tuple(params.values())] = sc
         # save the params and k-fold scores as a single line into the .csv file
         if save_path != '':
@@ -124,6 +125,7 @@ class Evaluation:
                 writer = csv.writer(f, dialect='excel')
                 for params in self.params_accu_dict:
                     writer.writerow(list(params) + self.params_accu_dict[params])
+            print('Write all scores to file finished!')
 
 
     # def bootstrappingSplit(self):
