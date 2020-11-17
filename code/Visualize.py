@@ -18,22 +18,23 @@ label2expression = {
 
 class Visualize:
 
-    def __init__(self, y_predicts=None, y_tests=None, algo_name=""):
+    def __init__(self, algo_name=""):
         """
-        :param y_predicts: array of y_prediction, which is also an array of predicted label of each sample
-        :param y_tests: array of y_true, which is also an array of true label of each sample
+        Class that can generate confusion matrix, ROC curve plot and other model-accuracy-related plots
+        :param algo_name: Algorithm to visualize, if not specified, would be Anonymous
         """
-        if y_tests is None:
-            y_tests = []
-        if y_predicts is None:
-            y_predicts = []
-        self.algo_name = algo_name
+        if algo_name == '':
+            self.algo_name = 'Anonymous'
+        else:
+            self.algo_name = algo_name
         self.labels = list(label2expression.keys())
         self.expressions = list(label2expression.values())
         self.label_num = len(self.labels)
         self.conf_mat = np.zeros([self.label_num, self.label_num])
-        self.set_y(y_predicts, y_tests)
         self.__conf_mats = []
+        self.y_predicts = []
+        self.y_tests = []
+        self.num = 0
 
     def set_y(self, y_predicts, y_tests):
         self.y_predicts = y_predicts
@@ -82,7 +83,6 @@ class Visualize:
         if save_path != '':
             plt.savefig(save_path)
         else:
-            plt.savefig(''.join([self.algo_name + "ConfusionMatrix.pdf"]))
             plt.show()
 
     def plotAccuracy(self):
@@ -98,13 +98,14 @@ class Visualize:
         plt.xlabel('Sample Size')
         plt.ylabel('Accuracy')
         plt.title('Prediction Accuracy v.s. Training Sample Size')
+        plt.tight_layout()
         # plt.show()
 
     def saveConfMat(self, path, param1, param2):
         with open(path, 'a') as f:
             csv_writer = csv.writer(f, dialect='excel')
             csv_writer.writerow([param1, param2])
-            csv_writer.writerows(self.conf_mat)
+            csv_writer.writerows(np.round(self.conf_mat, 2))
 
     def loadConfMats(self, path):
         with open(path) as f:
@@ -201,8 +202,8 @@ class Visualize:
         if save_coords_path != '':
             with open(save_coords_path, 'a') as f:
                 csv_writer = csv.writer(f, dialect='excel')
-                csv_writer.writerow(cv_fprs)
-                csv_writer.writerow(cv_tprs)
+                csv_writer.writerow(np.round(cv_fprs, 2))
+                csv_writer.writerow(np.round(cv_tprs, 2))
         auc = self.aucByRate(cv_fprs, cv_tprs)
         plt.plot(cv_fprs, cv_tprs, label='macro-average ROC curve (area = {0:0.2f})'.format(auc),
                  color='navy', linestyle=':', linewidth=4)
