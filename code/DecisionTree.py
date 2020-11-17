@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sklearn.tree
 from FER2013 import FER2013
+import numpy as np
 
 class DecisionTree(sklearn.tree.DecisionTreeClassifier):
     """DecisionTree
@@ -36,18 +37,25 @@ class DecisionTree(sklearn.tree.DecisionTreeClassifier):
         """
         return super().score(X, y)
 
+    def set_params(self, params):
+        return super().set_params(**params)
+
 if __name__=="__main__":
 
     # Example code
-    fer = FER2013()
-
-    train_list = ["{:05d}".format(i) for i in range(20000)]
-    X_train, y_train = fer.getSubset(train_list)
-
-    test_list = ["{:05d}".format(i) for i in range(20000, 25000)]
-    X_test, y_test = fer.getSubset(test_list)
-
+    fer = FER2013(filename='../data/subset3500.csv')
+    param_dict = {'max_depth': np.arange(1, 11, 1)}
+    from Evaluation import Evaluation
+    from Visualize import Visualize
+    eva = Evaluation(fer, 500)
     model = DecisionTree()
-    model.train(X_train, y_train)
-    print("mean accuracy:", model.score(X_test, y_test))
+    eva.gridSearchCV(10, model, param_dict, save_path='../result/AdaBoost/DecisionTree.csv')
+    best_model, best_score = eva.getBestModelAndScore()
+    print('Best model param is max_depth={}, best score is {}'.format(best_model, best_score))
+    test_score_dict = eva.getMeanScores()
+    depth_score_dict = {params[0]: score for params, score in test_score_dict.items()}
+    vis = Visualize('DecisionTree')
+    vis.plotAccuracy(depth_score_dict, xlabel='Max depth of Decision Tree',
+                     title='Accuracy v.s. max_depths of DecisionTreeClassifier')
+
 
