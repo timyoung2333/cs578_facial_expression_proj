@@ -178,7 +178,7 @@ class FER2013:
             v = np.array(v)
             if method == "random":
                 random.shuffle(v)
-            subDataset[k] = self.getSubset(v[0:num], encoding)[0]
+            subDataset[k] = self.getSubset(v[0:num], encoding=encoding)[0]
         return subDataset
 
     def showImage(self, img_id, showLandmark=False):
