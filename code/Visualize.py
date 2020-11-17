@@ -154,7 +154,7 @@ class Visualize:
         plt.ylim([0.0, 1.05])
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('Receiver Operating Characteristic of {}-label Multi-class Prediction of {}'.format(self.label_num, self.algo_name))
+        plt.title('Receiver Operating Characteristic (ROC) of {}-label Multi-class Prediction of {}'.format(self.label_num, self.algo_name))
         plt.legend(loc="lower right")
         plt.tight_layout()
         plt.show()
