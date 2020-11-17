@@ -35,6 +35,7 @@ class Evaluation:
             5: "Surprise",
             6: "Neutral"
         }
+        self.params_accu_dict = {}
     
     def getFeatureSize(self, mode):
         if mode == "raw":
@@ -105,6 +106,24 @@ class Evaluation:
                 y_test_pred.append(model.predict(X_test))
             scores.append(model.score(X_test, y_test))
         return y_train_pred, y_train_true, y_test_pred, y_test_true, scores
+
+    def gridSearchCV(self, k, model, param_grid=None, save_path=''):
+        if param_grid is None:
+            print('Should provide at least one param!')
+            return
+        # train each model with different params and get cross-validated scores
+        for key in param_grid:
+            for option in param_grid[key]:
+                _, _, _, _, sc = self.kfoldCV(k, model)
+                self.params_accu_dict[(key, option)] = sc
+
+        # save the params and k-fold scores as a single line into the .csv file
+        if save_path != '':
+            with open(save_path, 'a') as f:
+                writer = csv.writer(f, dialect='excel')
+                for params in self.params_accu_dict:
+                    writer.writerow(list(params) + self.params_accu_dict[params])
+
 
     # def bootstrappingSplit(self):
         
