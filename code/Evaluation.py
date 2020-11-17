@@ -93,7 +93,8 @@ class Evaluation:
         y_train_true = []
         y_test_pred = []
         y_test_true = []
-        scores = []
+        train_scores = []
+        test_scores = []
         for f in range(k):
             X_train, y_train, X_test, y_test = self.kfoldSplit(k, f)
             y_train_true.append(y_train)
@@ -105,8 +106,10 @@ class Evaluation:
             else:
                 y_train_pred.append(model.predict(X_train))
                 y_test_pred.append(model.predict(X_test))
-            scores.append(model.score(X_test, y_test))
-        return y_train_pred, y_train_true, y_test_pred, y_test_true, scores
+                # todo may need to use our own implementation to calculate score
+            train_scores.append(model.score(X_train, y_train))
+            test_scores.append(model.score(X_test, y_test))
+        return y_train_pred, y_train_true, y_test_pred, y_test_true, train_scores, test_scores
 
     def gridSearchCV(self, k, model, param_grid=None, save_path=''):
         if param_grid is None:
@@ -116,16 +119,19 @@ class Evaluation:
         param_grid = ParameterGrid(param_grid)
         for params in tqdm(param_grid):
             model.set_params(params)
-            _, _, _, _, sc = self.kfoldCV(k, model)
+            _, _, _, _, train_sc, test_sc = self.kfoldCV(k, model)
             print('Finished cross validation for model {}'.format(tuple(params.items())))
-            self.params_accu_dict[tuple(params.values())] = sc
-        # save the params and k-fold scores as a single line into the .csv file
-        if save_path != '':
-            with open(save_path, 'a') as f:
-                writer = csv.writer(f, dialect='excel')
-                for params in self.params_accu_dict:
-                    writer.writerow(list(params) + self.params_accu_dict[params])
-            print('Write all scores to file finished!')
+            key_train = list(params.values()) + ['Train']
+            key_test = list(params.values()) + ['Test']
+            self.params_accu_dict[tuple(key_train)] = train_sc
+            self.params_accu_dict[tuple(key_test)] = test_sc
+            if save_path != '':
+                # save the params and k-fold train & test scores as 2 lines into the .csv file
+                with open(save_path, 'a') as f:
+                    writer = csv.writer(f, dialect='excel')
+                    writer.writerow(key_train + train_sc)
+                    writer.writerow(key_test + test_sc)
+        print('Write all cv scores to file finished!')
 
 
     # def bootstrappingSplit(self):
@@ -158,9 +164,9 @@ if __name__ == "__main__":
     for key in algorithms:
         model = algorithms[key]
         eva = Evaluation(fer, 500)
-        y_train_pred, y_train_true, y_test_pred, y_test_true, scores = eva.kfoldCV(K, model)
-        algo_score_mean.append(np.mean(scores))
-        vis = Visualize(y_test_pred, y_test_true, str(key))
+        y_train_pred, y_train_true, y_test_pred, y_test_true, train_scores, test_scores = eva.kfoldCV(K, model)
+        algo_score_mean.append(np.mean(test_scores))
+        vis = Visualize(str(key))
         vis.plotConfusionMatrix()
     csv_writer.writerow(algo_score_mean)
     f.close()
