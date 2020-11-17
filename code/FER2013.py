@@ -6,6 +6,8 @@ import cv2
 import matplotlib.pyplot as plt
 import dlib
 from collections import defaultdict
+import csv
+
 
 class FER2013:
 
@@ -214,21 +216,35 @@ class FER2013:
         plt.bar(list(self.label2expression.keys()), res)
         for x, y in zip(self.label2expression, res):
             plt.text(x, y, '%d' % y, ha='center', va='bottom')
-            plt.text(x, y*0.95, '%.02f%%' % (y / sum(res) * 100), ha='center', va='top')
+            plt.text(x, y * 0.95, '%.02f%%' % (y / sum(res) * 100), ha='center', va='top')
         plt.xticks(list(self.label2expression.keys()), self.label2expression.values())
         plt.title('Number/Percentage of Each Label in the FER-2013 Dataset')
         plt.show()
 
-if __name__=="__main__":
+    def saveSubset(self, num_per_label, path):
+        with open(path, 'w') as f:
+            writer = csv.writer(f, dialect='excel')
+            writer.writerow(['emotion', 'Usage', 'pixels'])
+            for k, v in self.label_dic.items():
+                if len(v) < num_per_label:
+                    print('Feature {} has samples {} less than requested number {}!'.format(k, len(v), num_per_label))
+                    return
+                # Currently save the first portion of all samples
+                for img_id in v[0:num_per_label]:
+                    writer.writerow(list((k, 'Training')) + [' '.join(str(i) for i in self.X_dic[img_id])])
+        print('Subset saved successfully!')
 
+
+if __name__ == "__main__":
     # fer = FER2013("../data/sample.csv")
     # fer.getVector(img_id="00000", encoding="landmarks")
     # fer.getVector(img_id="00000", encoding="Haar")
     # fer.getVector(img_id="00000", encoding="raw_pixels+landmarks")
 
     # Example code
-    fer = FER2013("../data/sample.csv")
-    # fer = FER2013("../data/icml_face_data.csv")
+    # fer = FER2013("../data/sample.csv")
+    fer = FER2013("../data/icml_face_data.csv")
+    # fer.saveSubset(500, '../data/subset3500.csv')
     fer.showImage(img_id="{:05d}".format(0), showLandmark=True)
     # fer.showDistribution()
 
@@ -240,4 +256,3 @@ if __name__=="__main__":
     # print(fer.getImageIdByLabel(label=4)[:4])
     # print(fer.getImageIdByLabel(label=5)[:4])
     # print(fer.getImageIdByLabel(label=6)[:4])
-
