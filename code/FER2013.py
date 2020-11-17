@@ -168,7 +168,7 @@ class FER2013:
 
         return res
 
-    def getSubDataset(self, num, method=None):
+    def getSubDataset(self, num, encoding, method=None):
         """
         Input: the number of images from each class (equal num)
         Output: a sub dataset dictionary
@@ -178,7 +178,7 @@ class FER2013:
             v = np.array(v)
             if method == "random":
                 random.shuffle(v)
-            subDataset[k] = self.getSubset(v[0:num])[0]
+            subDataset[k] = self.getSubset(v[0:num], encoding)[0]
         return subDataset
 
     def showImage(self, img_id, showLandmark=False):
