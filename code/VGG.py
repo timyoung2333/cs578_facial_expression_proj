@@ -117,13 +117,13 @@ if __name__ == "__main__":
     # # Sample code
     fer = FER2013()
 
-    train_list = ["{:05d}".format(i) for i in range(1000)]
+    train_list = ["{:05d}".format(i) for i in range(800)]
     X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
 
     test_list = ["{:05d}".format(i) for i in range(800, 1000)]
     X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
 
     model = VGG()
-    model.train(X_train, y_train)
+    model.train(X_train, y_train, epoch_num=5000)
     print("mean accuracy (train):", model.score(X_train, y_train))
     print("mean accuracy (test):", model.score(X_test, y_test))

@@ -24,7 +24,7 @@ class CNN(nn.Module):
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 7)
 
-        self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.to(self.device)
 
     def forward(self, x):
@@ -95,13 +95,13 @@ if __name__ == "__main__":
     # Sample code
     fer = FER2013()
 
-    train_list = ["{:05d}".format(i) for i in range(20000)]
+    train_list = ["{:05d}".format(i) for i in range(4000)]
     X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
 
-    test_list = ["{:05d}".format(i) for i in range(20000, 25000)]
+    test_list = ["{:05d}".format(i) for i in range(4000, 5000)]
     X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
 
     model = CNN()
-    model.train(X_train, y_train)
+    model.train(X_train, y_train, epoch_num=10000)
     print("mean accuracy (train):", model.score(X_train, y_train))
     print("mean accuracy (test):", model.score(X_test, y_test))
