@@ -4,6 +4,7 @@
 from tqdm import tqdm
 from collections import defaultdict
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import ParameterGrid
 import numpy as np
 import cv2
 import os
@@ -112,11 +113,11 @@ class Evaluation:
             print('Should provide at least one param!')
             return
         # train each model with different params and get cross-validated scores
-        for key in param_grid:
-            for option in param_grid[key]:
-                _, _, _, _, sc = self.kfoldCV(k, model)
-                self.params_accu_dict[(key, option)] = sc
-
+        param_grid = ParameterGrid(param_grid)
+        for params in param_grid:
+            model.set_params(**params)
+            _, _, _, _, sc = self.kfoldCV(k, model)
+            self.params_accu_dict[tuple(params.values())] = sc
         # save the params and k-fold scores as a single line into the .csv file
         if save_path != '':
             with open(save_path, 'a') as f:
