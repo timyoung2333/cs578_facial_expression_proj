@@ -2,19 +2,22 @@ import itertools
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import label_binarize
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
+import pandas as pd
 import csv
 import os
 
 label2expression = {
-            0: "Angry",
-            1: "Disgust",
-            2: "Fear",
-            3: "Happy",
-            4: "Sad",
-            5: "Surprise",
-            6: "Neutral"
-        }
+    0: "Angry",
+    1: "Disgust",
+    2: "Fear",
+    3: "Happy",
+    4: "Sad",
+    5: "Surprise",
+    6: "Neutral"
+}
+
 
 class Visualize:
 
@@ -132,7 +135,8 @@ class Visualize:
         :return: None
         """
         y_trues = label_binarize(y_true, classes=self.labels)
-        assert y_true.shape[1] == self.label_num, 'Classes after binarization does not equal to {}!'.format(self.label_num)
+        assert y_true.shape[1] == self.label_num, 'Classes after binarization does not equal to {}!'.format(
+            self.label_num)
         assert y_true.shape == y_pred_prob.shape, 'Multi-class matrix size not match!'
         fprs, tprs = self.rocCurves(y_trues, y_pred_prob)
         plt.figure()
@@ -154,7 +158,9 @@ class Visualize:
         plt.ylim([0.0, 1.05])
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('Receiver Operating Characteristic (ROC) of {}-label Multi-class Prediction of {}'.format(self.label_num, self.algo_name))
+        plt.title(
+            'Receiver Operating Characteristic (ROC) of {}-label Multi-class Prediction of {}'.format(self.label_num,
+                                                                                                      self.algo_name))
         plt.legend(loc="lower right")
         plt.tight_layout()
         plt.show()
@@ -185,7 +191,8 @@ class Visualize:
             y_true = y_trues[fold]
             y_score = y_scores[fold]
             y_true_bin = label_binarize(y_true, classes=self.labels)
-            assert y_true_bin.shape[1] == self.label_num, 'Classes after binarization does not equal to {}!'.format(self.label_num)
+            assert y_true_bin.shape[1] == self.label_num, 'Classes after binarization does not equal to {}!'.format(
+                self.label_num)
             assert y_true_bin.shape == y_score.shape, 'Multi-class matrix size not match!'
             fprs, tprs = self.rocCurves(y_true_bin, y_score)
             # only care about the label-averaged ROC curve in each fold of cross validation
@@ -354,17 +361,82 @@ class Visualize:
         mean_tpr /= l
         return all_fpr, mean_tpr
 
+    def loadMeanAccuMatOfHyperParam(self, csv_path, param_grid, fixed_params={}, load_test=True):
+        if not csv_path:
+            print('Should specify csv file path of your algorithm!')
+            return
+        if not fixed_params:
+            assert len(param_grid) == 2, 'No fixed param, but only accept 2 variables right now!'
+
+        mutable_params = {}
+        # print('all ', param_grid)
+        # print('fixed ', fixed_params)
+        for param_key in param_grid:
+            if param_key not in fixed_params:
+                mutable_params[param_key] = param_grid[param_key]
+                print('Mutable: ', param_key)
+        if len(mutable_params) != 2:
+            print('Only accept 2 variables right now!')
+            print(mutable_params)
+            return
+
+        tp = 'Test' if load_test else 'Train'
+        mat = []
+        df = pd.read_csv(csv_path)
+        groupby = df.groupby(['type'] + list(fixed_params.keys()) + list(mutable_params.keys()))
+        params2 = list(mutable_params.keys())
+        for param1 in mutable_params[params2[0]]:
+            mean_scores = []
+            for param2 in mutable_params[params2[1]]:
+                query_tuple = (*(tp,), *tuple(fixed_params.values()), *(param1, param2))
+                scores_df = groupby.get_group(query_tuple)
+                scores = np.array(scores_df.iloc[:, -10:])
+                print('x: {}, y: {}, scores: {}'.format(param1, param2, scores))
+                mean_scores.append(np.mean(scores))
+            mat.append(mean_scores)
+        return mutable_params, np.array(mat)
+
+    def plotHyperParamHeatmap(self, mutable_params, mean_accu_mat, title='', save_path=''):
+        plt.figure(figsize=(6.4, 4.8))
+        ax = sns.heatmap(data=mean_accu_mat, annot=True)
+        keys = list(mutable_params.keys())
+        # ax = plt.subplot()
+        ax.set_xticklabels(mutable_params[keys[1]])
+        ax.set_yticklabels(mutable_params[keys[0]])
+        plt.title(title)
+        plt.xlabel(keys[1])
+        plt.ylabel(keys[0])
+        plt.tight_layout()
+        if save_path:
+            plt.savefig(save_path)
+        else:
+            plt.show()
+
 
 if __name__ == "__main__":
-    # sample y of true and prediction
-    # y_preds can be of the different sizes, as long as its size conforms with y_trues
-    y_true1 = [0, 1, 2, 3, 4, 5, 6]
-    y_pred1 = [1, 0, 2, 2, 5, 5, 5]  # 2 correct
-    y_pred2 = [2, 1, 1, 3, 3, 5, 5]  # 3 correct
-    y_pred3 = [0, 2, 2, 4, 4, 4, 6]  # 4 correct
+    vis = Visualize()
+    # Hyper-parameter tuning of all algorithms
 
-    # test confusion matrix
-    vis = Visualize([y_pred1, y_pred2, y_pred3], [y_true1] * 3, "Test")
-    vis.plotConfusionMatrix()
+    # 1. Perceptron
+    params = {
+        'penalty': ['l2', 'l1', 'elasticnet'],
+        'alpha': [0.0001, 0.001, 0.01],
+        'max_iter': [100, 500, 1000]
+    }
+    # By default use the max subset
+    for load_file in ['raw_pixels-subset500', 'raw_pixels+landmarks-subset500']:
+        for k, v in params.items():
+            for value in v:
+                fixed_param = {k: value}  # only 1 fixed since 3 params in total
+                para, mat = vis.loadMeanAccuMatOfHyperParam('../result/Perceptron/' + load_file + '.csv',
+                                                            param_grid=params, fixed_params=fixed_param)
+                vis.plotHyperParamHeatmap(params, mat,
+                                          'Accuracy of Perceptron with hyperparam {} = {}'.format(k, value),
+                                          '../result/Perceptron/HyperparamFigures/' + load_file + '-' + str(
+                                              k) + '=' + str(value) + '.pdf')
 
-    # vis.plotAccuracy()
+    # 2. AdaBoost
+    # todo
+
+    # 3. SVM
+    # todo
