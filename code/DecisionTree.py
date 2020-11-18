@@ -44,18 +44,43 @@ if __name__=="__main__":
 
     # Example code
     fer = FER2013(filename='../data/subset3500.csv')
-    param_dict = {'max_depth': np.arange(1, 11, 1)}
+
     from Evaluation import Evaluation
     from Visualize import Visualize
-    eva = Evaluation(fer, 500)
-    model = DecisionTree()
-    eva.gridSearchCV(10, model, param_dict, save_path='../result/AdaBoost/DecisionTree.csv')
-    best_model, best_score = eva.getBestModelAndScore()
-    print('Best model param is max_depth={}, best score is {}'.format(best_model, best_score))
-    test_score_dict = eva.getMeanScores()
-    depth_score_dict = {params[0]: score for params, score in test_score_dict.items()}
-    vis = Visualize('DecisionTree')
-    vis.plotAccuracy(depth_score_dict, xlabel='Max depth of Decision Tree',
-                     title='Accuracy v.s. max_depths of DecisionTreeClassifier')
 
+    # eva = Evaluation(fer, 500)
+    # model = DecisionTree()
+    # eva.gridSearchCV(10, model, param_dict, save_path='../result/AdaBoost/DecisionTree.csv')
+    # best_model, best_score = eva.getBestModelAndScore()
+    # print('Best model param is max_depth={}, best score is {}'.format(best_model, best_score))
+    # test_score_dict = eva.getMeanScores()
+    # depth_score_dict = {params[0]: score for params, score in test_score_dict.items()}
+    # vis = Visualize('DecisionTree')
+    # vis.plotAccuracy(depth_score_dict, xlabel='Max depth of Decision Tree',
+    #                  title='Accuracy v.s. max_depths of DecisionTreeClassifier')
+
+    # Hyperparameter tuning
+    params = {
+        'criterion': ['gini', 'entropy'],
+        'max_depth': [2, 4, 8, 16, 32, None],
+        'min_samples_split': [2, 4, 8, 16, 32]
+    }
+
+    # Subset size: 10 subset data sizes
+    samples_per_expression = np.arange(50, 500 + 1, 50)  # balanced sampling from all labels
+
+    # Feature encoding
+    feature_encoding_methods = ['raw_pixels', 'raw_pixels+landmarks']
+
+    # Train models by cross validation and save results
+    k = 10  # k-fold Cross Validation
+    for encoding in feature_encoding_methods:
+        for subset_size in samples_per_expression:
+            eva = Evaluation(fer, subset_size, encoding)
+            model = DecisionTree()
+            eva.gridSearchCV(k, model, param_grid=params,
+                             save_path='../result/DecisionTree/{0}-subset{1}.csv'.format(encoding, subset_size))
+            print('Finished training for subset size {} of all parameters!'.format(subset_size))
+        print('Finished training for feature encoding {} of all subset sizes and parameters!'.format(encoding))
+    print('Finished all the training, congratulations!')
 
