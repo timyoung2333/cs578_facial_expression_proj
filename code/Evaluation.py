@@ -26,6 +26,7 @@ class Evaluation:
         """
         self.fer = raw_data
         self.subDataset = self.fer.getSubDataset(subset_size, encoding)
+        self.encoding = encoding
         self.num = subset_size
         self.label2expression = {
             0: "Angry",
@@ -37,17 +38,22 @@ class Evaluation:
             6: "Neutral"
         }
         self.params_accu_dict = {}
-    
-    def getFeatureSize(self, mode):
-        if mode == "raw":
-            return 2304
-    
-    
+
+    def getFeatureSize(self):
+        if self.encoding == "raw_pixels":
+            return 48 * 48
+        if self.encoding == "raw_pixels+landmarks":
+            return 48 * 48 + 12
+        if self.encoding == "landmarks":
+            return 12
+
+        return -1
+
     def kfoldSplit(self, k, idx):
         """
-        idx represents the index of the fold of test set. 
+        idx represents the index of the fold of test set.
         """
-        feature_size = self.getFeatureSize("raw")
+        feature_size = self.getFeatureSize()
         test_size = int(self.num / k)
         train_size = self.num - test_size
         test_id = np.arange(int(idx*self.num/k), int((idx+1)*self.num/k))
@@ -65,13 +71,13 @@ class Evaluation:
         X_train, y_train = temp_train_data[:, 0:feature_size], temp_train_data[:, feature_size]
         X_test, y_test = temp_test_data[:, 0:feature_size], temp_test_data[:, feature_size]
         return X_train, y_train, X_test, y_test
-    
+
     def testModel(self, k, model):
         X_train, y_train, X_test, y_test = self.kfoldSplit(k, 0)
         model.train(X_train, y_train)
         y_pred = model.predict(X_test)
         print(model.score(X_test, y_test))
-    
+
     def kfoldCrossValidation(self, k, model):
         train_acc, test_acc = 0, 0
         cf_matrix = np.zeros((7, 7)) # y-axis is true label, x-axis is predicted label
@@ -175,7 +181,7 @@ class Evaluation:
         return best_model, max_mean_score
 
     # def bootstrappingSplit(self):
-        
+
 
     # def bootstrapping(self, B):
 
