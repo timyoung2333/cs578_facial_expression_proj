@@ -92,8 +92,15 @@ if __name__ == "__main__":
     learning_rates = np.logspace(-3, 1, 5, base=10)  # 0.001, 0.01, ..., 10
     params = {'n_estimators': estimator_sizes, 'learning_rate': learning_rates}
 
-    # Subset size: 10 subset data sizes
-    samples_per_expression = np.arange(50, 500 + 1, 50)  # balanced sampling from all labels
+    # # Subset size: 10 subset data sizes
+    # samples_per_expression = np.arange(50, 500 + 1, 50)  # balanced sampling from all labels
+
+    # run with mutiple terminals
+    import sys
+    if len(sys.argv) != 2:
+        print("Usage ./script.py <subset_size>")
+        exit(1)
+    samples_per_expression = [int(sys.argv[1])]
 
     # Feature encoding
     feature_encoding_methods = ['raw_pixels', 'raw_pixels+landmarks']
