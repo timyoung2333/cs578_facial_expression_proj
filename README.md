@@ -26,6 +26,14 @@ Besides, optionally, could generate 1 roc plot per mode, each plot contains roc 
 https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data
 
 ## Requirement
+> Final project report, due on Thursday November 19, 11.59pm EST
+> The final project should be submitted through Brightspace, as a ZIP file, including the following files and folders:
+> 1) report.pdf or report.docx: Final report
+> 2) sources folder: Complete source code
+> 3) compinst.txt: Compilation instructions (if done in Java or C++)
+> 4) dataset folder: Original dataset (if you are not doing any preprocessing) or preprocessed dataset (if you have done some preprocessing to the original dataset.)
+> 5) manual.txt: Manual of how to run your code. Please list all the external libraries and tools that you have used, which are not provided by default, and either provide instructions of how to download them or whenever possible, include them in a "libraries" folder. Also, please include observations if testing some specific algorithms takes too much time, and how to comment those parts in order to avoid running them, for instance.
+
 > The preliminary project report is due on Thursday November 5, 11.59pm EST
 > (No extension days allowed, submission will open on November 2.)
 > 
