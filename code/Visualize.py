@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import itertools
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import label_binarize
@@ -8,6 +9,7 @@ import pandas as pd
 import csv
 import os
 import re
+import pickle
 
 label2expression = {
     0: "Angry",
@@ -441,6 +443,31 @@ class Visualize:
         else:
             plt.show()
 
+    def plotIterVsAcc(self, method="CNN"):
+        scores_train = pickle.load(open("../result/iter_vs_acc/{}_scores_train.pkl".format(method), "rb"))
+        scores_test = pickle.load(open("../result/iter_vs_acc/{}_scores_test.pkl".format(method), "rb"))
+
+        x = []
+        if method == "CNN":
+            x = range(1, 10000, 100)
+        if method == "VGG":
+            x = range(1, 600, 10)
+
+        y_train = [scores_train[i] for i in x]
+        y_test = [scores_test[i] for i in x]
+
+        plt.plot(x, y_train, label="train")
+        plt.plot(x, y_test, label="test")
+
+        plt.xlabel("Epoch Number")
+        plt.ylabel("Accuracy")
+        plt.title("Accuracy versus Iteration Times (Method: {})".format(method))
+        plt.legend()
+        plt.show()
+
+        save_path = "../docs/report/figures/iter_vs_acc/{}.pdf".format(method)
+        plt.savefig(save_path)
+
 def tuneHyperParams():
     vis = Visualize()
     # 1. Hyper-parameter tuning of all algorithms
@@ -468,6 +495,7 @@ def tuneHyperParams():
     #   1.3. SVM
     # todo
 
+
 def accuVsSubsetSize():
     vis = Visualize()
     # 2. Accuracy on Training and Test set v.s. subset size
@@ -490,6 +518,11 @@ def accuVsSubsetSize():
                            '../result/Perceptron/AccuracyVsSubsetSizeFigures/' + str(best_param.values()) + '.pdf')
 
 if __name__ == "__main__":
-    tuneHyperParams()
-    accuVsSubsetSize()
+
+    # tuneHyperParams()
+    # accuVsSubsetSize()
+
+    vis = Visualize()
+    # vis.plotIterVsAcc(method="CNN")
+    vis.plotIterVsAcc(method="VGG")
 
