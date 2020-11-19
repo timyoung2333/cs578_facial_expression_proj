@@ -24,7 +24,7 @@ class CNN(nn.Module):
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 7)
 
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
         self.to(self.device)
 
     def forward(self, x):
@@ -90,18 +90,48 @@ class CNN(nn.Module):
         y_hat = self.predict(X)
         return sum(y == y_hat) / len(y)
 
+    def set_params(self, params):
+        pass
+
 if __name__ == "__main__":
 
-    # Sample code
-    fer = FER2013()
+    # # Sample code
+    # fer = FER2013()
 
-    train_list = ["{:05d}".format(i) for i in range(4000)]
-    X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
+    # train_list = ["{:05d}".format(i) for i in range(4000)]
+    # X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
 
-    test_list = ["{:05d}".format(i) for i in range(4000, 5000)]
-    X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
+    # test_list = ["{:05d}".format(i) for i in range(4000, 5000)]
+    # X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
 
-    model = CNN()
-    model.train(X_train, y_train, epoch_num=10000)
-    print("mean accuracy (train):", model.score(X_train, y_train))
-    print("mean accuracy (test):", model.score(X_test, y_test))
+    # model = CNN()
+    # model.train(X_train, y_train, epoch_num=10000)
+    # print("mean accuracy (train):", model.score(X_train, y_train))
+    # print("mean accuracy (test):", model.score(X_test, y_test))
+
+    fer = FER2013(filename='../data/subset3500.csv')
+    from Evaluation import Evaluation
+    from Visualize import Visualize
+
+    params = {
+        'n_layers': [5]
+    }
+
+    # Subset size: 10 subset data sizes
+    samples_per_expression = np.arange(50, 500 + 1, 50)  # balanced sampling from all labels
+
+    # Feature encoding
+    feature_encoding_methods = ['raw_pixels']
+
+    # Train models by cross validation and save results
+    k = 10  # k-fold Cross Validation
+    for encoding in feature_encoding_methods:
+        for subset_size in samples_per_expression:
+            eva = Evaluation(fer, subset_size, encoding)
+            model = CNN()
+            eva.gridSearchCV(k, model, param_grid=params,
+                             save_path='../result/CNN/{0}-subset{1}.csv'.format(encoding, subset_size))
+            print('Finished training for subset size {} of all parameters!'.format(subset_size))
+        print('Finished training for feature encoding {} of all subset sizes and parameters!'.format(encoding))
+    print('Finished all the training, congratulations!')
+
