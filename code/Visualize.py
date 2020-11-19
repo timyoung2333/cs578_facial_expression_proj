@@ -450,6 +450,19 @@ class Visualize:
         else:
             plt.show()
 
+    def plotAccuIter(self, method, x, train, test, save_path=''):
+        plt.figure()
+        plt.plot(x, train, label='train')
+        plt.plot(x, test, label='test')
+        plt.xlabel("Iteration Times")
+        plt.ylabel("Accuracy")
+        plt.title("Accuracy versus Iteration Times (Method: {})".format(method))
+        plt.legend()
+        if save_path:
+            plt.savefig(save_path)
+        else:
+            plt.show()
+
     def plotIterVsAcc(self, method="CNN"):
         scores_train = pickle.load(open("../result/iter_vs_acc/{}_scores_train.pkl".format(method), "rb"))
         scores_test = pickle.load(open("../result/iter_vs_acc/{}_scores_test.pkl".format(method), "rb"))
@@ -570,12 +583,54 @@ def accuVsSubsetSize():
     algos = {'Perceptron': perc_raw_subset_scores, 'SVM': svm_raw_subset_scores, 'AdaBoost': ada_raw_subset_scores}
     vis.plotAccuSubsetSize(algos, 'Comparison between Best Accuracy and Subset Size', '../result/accuVsSubset.pdf')
 
+def accuVsIteration():
+    vis = Visualize()
+    # svm
+    iter = np.linspace(50, 500+1, 10)
+    train = []
+    test = []
+    with open('../result/SVM/iter.csv') as f:
+        reader = csv.reader(f)
+        for l in iter:
+            tr = list(next(reader))[-10:]
+            tr = [float(i) for i in tr]
+            te = list(next(reader))[-10:]
+            te = [float(i) for i in te]
+            train.append(np.mean(tr))
+            test.append(np.mean(te))
+    vis.plotAccuIter('SVM', iter, train, test, '../docs/report/figures/iter_vs_acc/SVM.pdf')
+
+    # AdaBoost
+    test = [0.314, 0.321, 0.330, 0.334, 0.337, 0.338, 0.331, 0.338, 0.338, 0.344]
+    train = []
+    with open('../result/AdaBoost/raw_pixels-subset500.csv', 'r') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            row = list(row)
+            if row[0] == '0.1' and row[2] == 'Train':
+                train.append(np.mean([float(i) for i in row[-10:]]))
+    vis.plotAccuIter('AdaBoost', iter, train, test, '../docs/report/figures/iter_vs_acc/AdaBoost.pdf')
+
+    # Perceptron
+    train = []
+    test = []
+    iter = np.arange(100, 1000+1, 100)
+    with open('../result/Perceptron/iter.csv') as f:
+        reader = csv.reader(f)
+        for l in iter:
+            tr = float(list(next(reader))[-1])
+            te = float(list(next(reader))[-1])
+            train.append(tr)
+            test.append(te)
+    vis.plotAccuIter('Perceptron', iter, train, test, '../docs/report/figures/iter_vs_acc/Perceptron.pdf')
+
 if __name__ == "__main__":
 
     # tuneHyperParams()
     # accuVsSubsetSize()
 
-    vis = Visualize()
+    # vis = Visualize()
     # vis.plotIterVsAcc(method="CNN")
-    vis.plotIterVsAcc(method="VGG")
+    # vis.plotIterVsAcc(method="VGG")
 
+    accuVsIteration()
