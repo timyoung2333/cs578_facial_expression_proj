@@ -109,13 +109,13 @@ class CNN(nn.Module):
 if __name__ == "__main__":
 
     # Sample code
-    fer = FER2013()
+    fer = FER2013(filename='../data/subset3500.csv')
+    img_ids = ["{:05d}".format(i) for i in range(3500)]
 
-    train_list = ["{:05d}".format(i) for i in range(3000)]
-    X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
-
-    test_list = ["{:05d}".format(i) for i in range(3000, 3500)]
-    X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
+    import random
+    random.shuffle(img_ids)
+    X_train, y_train = fer.getSubset(img_ids[:3000], encoding="raw_pixels")
+    X_test, y_test = fer.getSubset(img_ids[3000:], encoding="raw_pixels")
 
     model = CNN()
     scores_train = []
@@ -123,4 +123,3 @@ if __name__ == "__main__":
     model.train(X_train, y_train, epoch_num=10000, debug=True)
     # print("mean accuracy (train):", model.score(X_train, y_train))
     # print("mean accuracy (test):", model.score(X_test, y_test))
-
