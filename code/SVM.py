@@ -35,7 +35,8 @@ class SVM(sklearn.svm.SVC):
                    y(i) is the label (+1 or -1) of the i-th sample
         Output: scalar, mean accurary on the test set [X, y]
         """
-        return super().score(X, y)
+        y_hat = self.predict(X)
+        return sum(y == y_hat) / len(y)
 
     def set_params(self, params):
         return super().set_params(**params)

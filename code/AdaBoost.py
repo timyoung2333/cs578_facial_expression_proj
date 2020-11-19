@@ -40,7 +40,8 @@ class AdaBoost(sklearn.ensemble.AdaBoostClassifier):
                    y(i) is the label (+1 or -1) of the i-th sample
         Output: scalar, mean accuracy on the test set [X, y]
         """
-        return super().score(X, y)
+        y_hat = self.predict(X)
+        return sum(y == y_hat) / len(y)
 
     def staged_score(self, X, y):
         return super().staged_score(X, y)
