@@ -8,7 +8,8 @@ import math
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-
+from torch.utils.data import TensorDataset, DataLoader
+import pickle
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -105,26 +106,34 @@ class ResNet(nn.Module):
         return out
 
     def train(self, X, y, epoch_num=500, debug=False):
-
         inputs = torch.Tensor(X.reshape((len(X), 1, 48, 48)))
         labels = torch.Tensor(y)
 
-        inputs = inputs.to(self.device)
-        labels = labels.to(self.device).long()
+        # inputs = inputs.to(self.device)
+        # labels = labels.to(self.device).long()
+
+        dataset = TensorDataset(inputs, labels)
+        dataloader = DataLoader(dataset, batch_size=8)
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
 
         for epoch in range(epoch_num):  # loop over the dataset multiple times
 
-            # zero the parameter gradients
-            optimizer.zero_grad()
+            loss = None
+            for local_batch, local_labels in dataloader:
 
-            # forward + backward + optimize
-            outputs = self(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+                local_batch = local_batch.to(self.device)
+                local_labels = local_labels.to(self.device).long()
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # forward + backward + optimize
+                outputs = self(local_batch)
+                loss = criterion(outputs, local_labels)
+                loss.backward()
+                optimizer.step()
 
             # print loss
             if debug:
@@ -139,9 +148,11 @@ class ResNet(nn.Module):
         print('Finished Training')
 
         if debug:
-            pickle.dump(scores_train, open("../result/iter_vs_acc/CNN_scores_train.pkl", "wb"))
-            pickle.dump(scores_test, open("../result/iter_vs_acc/CNN_scores_test.pkl", "wb"))
+            pickle.dump(scores_train, open("../result/iter_vs_acc/ResNet_scores_train.pkl", "wb"))
+            pickle.dump(scores_test, open("../result/iter_vs_acc/ResNet_scores_test.pkl", "wb"))
             print('Debugging pickle files have been saved.')
+
+        torch.cuda.ipc_collect()
 
     def save(self, path="./model/resnet.pth"):
         """
@@ -177,12 +188,12 @@ if __name__ == "__main__":
 
     # Sample code
     fer = FER2013(filename='../data/subset3500.csv')
-    img_ids = ["{:05d}".format(i) for i in range(3500)]
+    img_ids = ["{:05d}".format(i) for i in range(1000)]
 
     import random
     random.shuffle(img_ids)
-    X_train, y_train = fer.getSubset(img_ids[:3000], encoding="raw_pixels")
-    X_test, y_test = fer.getSubset(img_ids[3000:], encoding="raw_pixels")
+    X_train, y_train = fer.getSubset(img_ids[:800], encoding="raw_pixels")
+    X_test, y_test = fer.getSubset(img_ids[800:], encoding="raw_pixels")
 
     # ResNet 34
     model = ResNet(Bottleneck, [3, 4, 6, 3])
