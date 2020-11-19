@@ -38,6 +38,9 @@ class DecisionTree(sklearn.tree.DecisionTreeClassifier):
         y_hat = self.predict(X)
         return sum(y == y_hat) / len(y)
 
+    def predict_proba(self, X):
+        return super().predict_proba(X)
+
     def set_params(self, params):
         return super().set_params(**params)
 
