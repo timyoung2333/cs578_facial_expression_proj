@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import csv
 import os
+import re
 
 label2expression = {
     0: "Angry",
@@ -396,6 +397,15 @@ class Visualize:
             mat.append(mean_scores)
         return mutable_params, np.array(mat)
 
+    def loadCVScores(self, csv_path, best_param):
+        df = pd.read_csv(csv_path)
+        gb = df.groupby(['type'] + list(best_param.keys()))
+        train_scores_df = gb.get_group((*('Train',), *tuple(best_param.values())))
+        train_scores = np.array(train_scores_df.iloc[:, -10:])
+        test_scores_df = gb.get_group((*('Test',), *tuple(best_param.values())))
+        test_scores = np.array(test_scores_df.iloc[:, -10:])
+        return list(train_scores), list(test_scores)
+
     def plotHyperParamHeatmap(self, mutable_params, mean_accu_mat, title='', save_path=''):
         plt.figure(figsize=(6.4, 4.8))
         ax = sns.heatmap(data=mean_accu_mat, annot=True)
@@ -412,12 +422,31 @@ class Visualize:
         else:
             plt.show()
 
+    def plotAccuSubsetSize(self, subset_to_scores, title='', save_path=''):
+        x = list(subset_to_scores.keys())
+        y_train_mean = [np.mean(l[0]) for l in subset_to_scores.values()]
+        y_test_mean = [np.mean(l[1]) for l in subset_to_scores.values()]
+        y_train_std = [np.std(l[0]) for l in subset_to_scores.values()]
+        y_test_std = [np.std(l[1]) for l in subset_to_scores.values()]
+        plt.figure()
+        plt.errorbar(x=x, y=y_train_mean, yerr=y_train_std)
+        plt.errorbar(x=x, y=y_test_mean, yerr=y_test_std)
+        plt.xticks(ticks=x)
+        plt.title(title)
+        plt.xlabel('Subset Size')
+        plt.ylabel('Accuracy')
+        plt.legend(['Training', 'Test'])
+        if save_path:
+            plt.savefig(save_path)
+        else:
+            plt.show()
+
 
 if __name__ == "__main__":
     vis = Visualize()
-    # Hyper-parameter tuning of all algorithms
+    # 1. Hyper-parameter tuning of all algorithms
 
-    # 1. Perceptron
+    #   1.1 Perceptron
     params = {
         'penalty': ['l2', 'l1', 'elasticnet'],
         'alpha': [0.0001, 0.001, 0.01],
@@ -435,8 +464,26 @@ if __name__ == "__main__":
                                           '../result/Perceptron/HyperparamFigures/' + load_file + '-' + str(
                                               k) + '=' + str(value) + '.pdf')
 
-    # 2. AdaBoost
+    #   1.2. AdaBoost
     # todo
 
-    # 3. SVM
+    #   1.3. SVM
     # todo
+
+    # 2. Accuracy on Training and Test set v.s. subset size
+    #   2.1 Perceptron
+    # Should acquire best_param from Evaluation.getBestModelAndScore
+    best_param = {'penalty': 'l2', 'alpha': 0.001, 'max_iter': 100}
+    subset_to_scores = {}
+    for root, dirs, files in os.walk('../result/Perceptron/'):
+        files.sort(key=lambda x: int(re.findall("\d+", x)[0]))
+        print(files)
+        for file in files:
+            base_name, ext = os.path.splitext(file)
+            if ext == '.csv':
+                print(root + file)
+                train_scores, test_scores = vis.loadCVScores(root + file, best_param)
+                subset_size = int(re.findall("\d+", base_name)[0])
+                print(subset_size)
+                subset_to_scores[subset_size] = [train_scores, test_scores]
+    vis.plotAccuSubsetSize(subset_to_scores, 'Accuracy of Training and Test set v.s. Subset Size of Perceptron')
