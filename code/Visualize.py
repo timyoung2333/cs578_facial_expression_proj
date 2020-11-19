@@ -448,14 +448,13 @@ class Visualize:
         scores_test = pickle.load(open("../result/iter_vs_acc/{}_scores_test.pkl".format(method), "rb"))
 
         x = []
-        y_train = []
-        y_test = []
-
         if method == "CNN":
-            step = 100
-            x = [step*i for i in range(int(len(scores_test)/step))]
-            y_train = [scores_train[i] for i in x]
-            y_test = [scores_test[i] for i in x]
+            x = range(1, 10000, 100)
+        if method == "VGG":
+            x = range(1, 600, 10)
+
+        y_train = [scores_train[i] for i in x]
+        y_test = [scores_test[i] for i in x]
 
         plt.plot(x, y_train, label="train")
         plt.plot(x, y_test, label="test")
@@ -464,6 +463,7 @@ class Visualize:
         plt.ylabel("Accuracy")
         plt.title("Accuracy versus Iteration Times (Method: {})".format(method))
         plt.legend()
+        plt.show()
 
         save_path = "../docs/report/figures/iter_vs_acc/{}.pdf".format(method)
         plt.savefig(save_path)
@@ -523,5 +523,6 @@ if __name__ == "__main__":
     # accuVsSubsetSize()
 
     vis = Visualize()
-    vis.plotIterVsAcc(method="CNN")
+    # vis.plotIterVsAcc(method="CNN")
+    vis.plotIterVsAcc(method="VGG")
 
