@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 from tqdm import tqdm
+import pickle
 
 class CNN(nn.Module):
     """Convolutional neural network
@@ -36,7 +37,7 @@ class CNN(nn.Module):
         x = self.fc3(x)
         return x
 
-    def train(self, X, y, epoch_num=500):
+    def train(self, X, y, epoch_num=2000, debug=False):
 
         inputs = torch.Tensor(X.reshape((len(X), 1, 48, 48)))
         labels = torch.Tensor(y)
@@ -59,9 +60,21 @@ class CNN(nn.Module):
             optimizer.step()
 
             # print loss
-            print("epoch: {}, loss: {:.3f}".format(epoch+1, loss.item()))
+            if debug:
+                score1 = self.score(X_train, y_train)
+                score2 = self.score(X_test, y_test)
+                scores_train.append(score1)
+                scores_test.append(score2)
+                print("epoch: {}, score (train): {:.3f}, score (test): {:.3f}".format(epoch+1, score1, score2))
+            else:
+                print("epoch: {}, loss: {:.3f}".format(epoch+1, loss.item()))
 
         print('Finished Training')
+
+        if debug:
+            pickle.dump(scores_train, open("../result/iter_vs_acc/CNN_scores_train.pkl", "wb"))
+            pickle.dump(scores_test, open("../result/iter_vs_acc/CNN_scores_test.pkl", "wb"))
+            print('Debugging pickle files have been saved.')
 
     def save(self, path="./model/cnn.pth"):
         """
@@ -95,43 +108,19 @@ class CNN(nn.Module):
 
 if __name__ == "__main__":
 
-    # # Sample code
-    # fer = FER2013()
+    # Sample code
+    fer = FER2013()
 
-    # train_list = ["{:05d}".format(i) for i in range(4000)]
-    # X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
+    train_list = ["{:05d}".format(i) for i in range(3000)]
+    X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
 
-    # test_list = ["{:05d}".format(i) for i in range(4000, 5000)]
-    # X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
+    test_list = ["{:05d}".format(i) for i in range(3000, 3500)]
+    X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
 
-    # model = CNN()
-    # model.train(X_train, y_train, epoch_num=10000)
+    model = CNN()
+    scores_train = []
+    scores_test = []
+    model.train(X_train, y_train, debug=True)
     # print("mean accuracy (train):", model.score(X_train, y_train))
     # print("mean accuracy (test):", model.score(X_test, y_test))
-
-    fer = FER2013(filename='../data/subset3500.csv')
-    from Evaluation import Evaluation
-    from Visualize import Visualize
-
-    params = {
-        'n_layers': [5]
-    }
-
-    # Subset size: 10 subset data sizes
-    samples_per_expression = np.arange(50, 500 + 1, 50)  # balanced sampling from all labels
-
-    # Feature encoding
-    feature_encoding_methods = ['raw_pixels']
-
-    # Train models by cross validation and save results
-    k = 10  # k-fold Cross Validation
-    for encoding in feature_encoding_methods:
-        for subset_size in samples_per_expression:
-            eva = Evaluation(fer, subset_size, encoding)
-            model = CNN()
-            eva.gridSearchCV(k, model, param_grid=params,
-                             save_path='../result/CNN/{0}-subset{1}.csv'.format(encoding, subset_size))
-            print('Finished training for subset size {} of all parameters!'.format(subset_size))
-        print('Finished training for feature encoding {} of all subset sizes and parameters!'.format(encoding))
-    print('Finished all the training, congratulations!')
 
