@@ -4,7 +4,6 @@
 from tqdm import tqdm
 from collections import defaultdict
 from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import ParameterGrid
 import numpy as np
 import cv2
 import os
@@ -17,6 +16,7 @@ from SVM import SVM
 from Visualize import Visualize
 import matplotlib.pyplot as plt
 import csv
+import itertools
 
 class Evaluation:
 
@@ -117,12 +117,20 @@ class Evaluation:
             test_scores.append(model.score(X_test, y_test))
         return y_train_pred, y_train_true, y_test_pred, y_test_true, train_scores, test_scores
 
+    def getAllParamCombinations(self, param_grid):
+        param_comb = []
+        keys, values = zip(*param_grid.items())
+        for v in itertools.product(*values):
+            params = dict(zip(keys, v))
+            param_comb.append(params)
+        return param_comb
+
     def gridSearchCV(self, k, model, param_grid=None, save_path=''):
         if param_grid is None:
             print('Should provide at least one param!')
             return
         # train each model with different params and get cross-validated scores
-        param_grid = ParameterGrid(param_grid)
+        param_grid = self.getAllParamCombinations(param_grid)
         for params in tqdm(param_grid):
             model.set_params(params)
             _, _, _, _, train_sc, test_sc = self.kfoldCV(k, model)
