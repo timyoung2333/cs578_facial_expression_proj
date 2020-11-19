@@ -8,6 +8,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.nn.init as init
+from torch.utils.data import TensorDataset, DataLoader
+import pickle
 
 class VGG(nn.Module):
     """VGG-16 Model
@@ -34,7 +36,7 @@ class VGG(nn.Module):
                 m.weight.data.normal_(0, math.sqrt(2. / n))
                 m.bias.data.zero_()
 
-        self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.to(self.device)
 
     def forward(self, x):
@@ -63,32 +65,40 @@ class VGG(nn.Module):
         inputs = torch.Tensor(X.reshape((len(X), 1, 48, 48)))
         labels = torch.Tensor(y)
 
-        inputs = inputs.to(self.device)
-        labels = labels.to(self.device).long()
+        # inputs = inputs.to(self.device)
+        # labels = labels.to(self.device).long()
+
+        dataset = TensorDataset(inputs, labels)
+        dataloader = DataLoader(dataset, batch_size=8)
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
 
         for epoch in range(epoch_num):  # loop over the dataset multiple times
 
-            # zero the parameter gradients
-            optimizer.zero_grad()
+            for local_batch, local_labels in dataloader:
 
-            # forward + backward + optimize
-            outputs = self(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+                local_batch = local_batch.to(self.device)
+                local_labels = local_labels.to(self.device).long()
 
-            # print loss
-            if debug:
-                score1 = self.score(X_train, y_train)
-                score2 = self.score(X_test, y_test)
-                scores_train.append(score1)
-                scores_test.append(score2)
-                print("epoch: {}, score (train): {:.3f}, score (test): {:.3f}".format(epoch+1, score1, score2))
-            else:
-                print("epoch: {}, loss: {:.3f}".format(epoch+1, loss.item()))
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # forward + backward + optimize
+                outputs = self(local_batch)
+                loss = criterion(outputs, local_labels)
+                loss.backward()
+                optimizer.step()
+
+                # print loss
+                if debug:
+                    score1 = self.score(X_train, y_train)
+                    score2 = self.score(X_test, y_test)
+                    scores_train.append(score1)
+                    scores_test.append(score2)
+                    print("epoch: {}, score (train): {:.3f}, score (test): {:.3f}".format(epoch+1, score1, score2))
+                else:
+                    print("epoch: {}, loss: {:.3f}".format(epoch+1, loss.item()))
 
         print('Finished Training')
 
