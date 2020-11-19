@@ -188,10 +188,38 @@ class Evaluation:
                 best_model = k
         return best_model, max_mean_score
 
-    # def bootstrappingSplit(self):
+    def bootstrappingSplit(self):
+            feature_size = self.getFeatureSize("raw")
+            ls = np.random.randint(self.num, size=self.num)
+            ls = np.unique(ls)
+            train_id = ls
+            test_id = np.setdiff1d(np.arange(self.num), train_id)
+            temp_train_data, temp_test_data = np.empty((0,feature_size+1)), np.empty((0,feature_size+1))
+            for i in range(7):
+                temp_train_data = np.append(temp_train_data, np.concatenate((self.subDataset[i][train_id], np.array([[i] * len(train_id)]).T), axis=1), axis=0)
+                temp_test_data = np.append(temp_test_data, np.concatenate((self.subDataset[i][test_id], np.array([[i] * len(test_id)]).T), axis=1), axis=0)
 
-
-    # def bootstrapping(self, B):
+            X_train, y_train = temp_train_data[:, 0:feature_size], temp_train_data[:, feature_size]
+            X_test, y_test = temp_test_data[:, 0:feature_size], temp_test_data[:, feature_size]
+            return X_train, y_train, X_test, y_test
+        
+    
+    def bootstrappingCV(self, B, model):
+        y_train_pred = []
+        y_train_true = []
+        y_test_pred = []
+        y_test_true = []
+        scores = []
+        
+        for b in range(B):
+            X_train, y_train, X_test, y_test = self.bootstrappingSplit()
+            y_train_true.append(y_train)
+            y_test_true.append(y_test)
+            model.train(X_train, y_train)
+            y_train_pred.append(model.predict(X_train))
+            y_test_pred.append(model.predict(X_test))
+            scores.append(model.score(X_test, y_test))
+        return y_train_pred, y_train_true, y_test_pred, y_test_true, scores
 
 
 # fer = FER2013(filename="/Users/timyang/Downloads/CS578-Project-master/data/icml_face_data.csv")
