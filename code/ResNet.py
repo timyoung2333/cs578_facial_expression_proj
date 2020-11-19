@@ -82,7 +82,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
         self.linear = nn.Linear(512*block.expansion, num_classes)
 
-        self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.to(self.device)
 
     def _make_layer(self, block, planes, num_blocks, stride):
@@ -104,7 +104,7 @@ class ResNet(nn.Module):
         out = self.linear(out)
         return out
 
-    def train(self, X, y, epoch_num=500):
+    def train(self, X, y, epoch_num=500, debug=False):
 
         inputs = torch.Tensor(X.reshape((len(X), 1, 48, 48)))
         labels = torch.Tensor(y)
@@ -127,9 +127,21 @@ class ResNet(nn.Module):
             optimizer.step()
 
             # print loss
-            print("epoch: {}, loss: {:.3f}".format(epoch+1, loss.item()))
+            if debug:
+                score1 = self.score(X_train, y_train)
+                score2 = self.score(X_test, y_test)
+                scores_train.append(score1)
+                scores_test.append(score2)
+                print("epoch: {}, score (train): {:.3f}, score (test): {:.3f}".format(epoch+1, score1, score2))
+            else:
+                print("epoch: {}, loss: {:.3f}".format(epoch+1, loss.item()))
 
         print('Finished Training')
+
+        if debug:
+            pickle.dump(scores_train, open("../result/iter_vs_acc/CNN_scores_train.pkl", "wb"))
+            pickle.dump(scores_test, open("../result/iter_vs_acc/CNN_scores_test.pkl", "wb"))
+            print('Debugging pickle files have been saved.')
 
     def save(self, path="./model/resnet.pth"):
         """
@@ -165,15 +177,17 @@ if __name__ == "__main__":
 
     # Sample code
     fer = FER2013(filename='../data/subset3500.csv')
+    img_ids = ["{:05d}".format(i) for i in range(3500)]
 
-    train_list = ["{:05d}".format(i) for i in range(80)]
-    X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
-
-    test_list = ["{:05d}".format(i) for i in range(80, 100)]
-    X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
+    import random
+    random.shuffle(img_ids)
+    X_train, y_train = fer.getSubset(img_ids[:3000], encoding="raw_pixels")
+    X_test, y_test = fer.getSubset(img_ids[3000:], encoding="raw_pixels")
 
     # ResNet 34
     model = ResNet(Bottleneck, [3, 4, 6, 3])
-    model.train(X_train, y_train, epoch_num=5000)
-    print("mean accuracy (train):", model.score(X_train, y_train))
-    print("mean accuracy (test):", model.score(X_test, y_test))
+    scores_train = []
+    scores_test = []
+    model.train(X_train, y_train, epoch_num=2000, debug=True)
+    # print("mean accuracy (train):", model.score(X_train, y_train))
+    # print("mean accuracy (test):", model.score(X_test, y_test))
