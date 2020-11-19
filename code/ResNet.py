@@ -170,19 +170,18 @@ class ResNet(nn.Module):
         # inputs = inputs.to(self.device)
 
         dataset = TensorDataset(inputs, tmp)
-        dataloader = DataLoader(dataset, batch_size=16)
+        dataloader = DataLoader(dataset, batch_size=16, shuffle=False)
 
-        res = []
+        y_hat = np.array([])
         for local_batch, _ in dataloader:
 
             local_batch = local_batch.to(self.device)
             outputs = self(local_batch)
             _, predicted = torch.max(outputs, 1)
 
-            y_hat = list(predicted.cpu().numpy())
-            res += y_hat
+            predicted = predicted.cpu().numpy()
+            y_hat = np.concatenate((y_hat, predicted), axis=None)
 
-        y_hat = np.array(res)
         return y_hat
 
     def score(self, X, y):
@@ -203,17 +202,17 @@ if __name__ == "__main__":
 
     # Sample code
     fer = FER2013()
-    img_ids = ["{:05d}".format(i) for i in range(500)]
+    img_ids = ["{:05d}".format(i) for i in range(1000)]
 
     import random
     random.shuffle(img_ids)
-    X_train, y_train = fer.getSubset(img_ids[:400], encoding="raw_pixels")
-    X_test, y_test = fer.getSubset(img_ids[400:], encoding="raw_pixels")
+    X_train, y_train = fer.getSubset(img_ids[:800], encoding="raw_pixels")
+    X_test, y_test = fer.getSubset(img_ids[800:], encoding="raw_pixels")
 
     # ResNet 34
     model = ResNet(Bottleneck, [3, 4, 6, 3])
     scores_train = []
     scores_test = []
-    model.train(X_train, y_train, epoch_num=2000, debug=True)
+    model.train(X_train, y_train, epoch_num=200, debug=True)
     # print("mean accuracy (train):", model.score(X_train, y_train))
     # print("mean accuracy (test):", model.score(X_test, y_test))

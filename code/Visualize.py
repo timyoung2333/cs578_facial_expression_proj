@@ -472,6 +472,8 @@ class Visualize:
             x = range(1, 10000, 100)
         if method == "VGG":
             x = range(1, 600, 10)
+        if method == "ResNet":
+            x = range(1, 40)
 
         y_train = [scores_train[i] for i in x]
         y_test = [scores_test[i] for i in x]
@@ -483,7 +485,7 @@ class Visualize:
         plt.ylabel("Accuracy")
         plt.title("Accuracy versus Iteration Times (Method: {})".format(method))
         plt.legend()
-        plt.show()
+        # plt.show()
 
         save_path = "../docs/report/figures/iter_vs_acc/{}.pdf".format(method)
         plt.savefig(save_path)
@@ -628,9 +630,11 @@ if __name__ == "__main__":
 
     # tuneHyperParams()
     # accuVsSubsetSize()
+    # accuVsIteration()
 
-    # vis = Visualize()
+    vis = Visualize()
     # vis.plotIterVsAcc(method="CNN")
     # vis.plotIterVsAcc(method="VGG")
+    vis.plotIterVsAcc(method="ResNet")
 
-    accuVsIteration()
+
