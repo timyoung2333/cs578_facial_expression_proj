@@ -38,6 +38,9 @@ class Perceptron(sklearn.linear_model.Perceptron):
         y_hat = self.predict(X)
         return sum(y == y_hat) / len(y)
 
+    def decision_function(self, X):
+        return super().decision_function(X)
+
     def set_params(self, params):
         return super().set_params(**params)
 
