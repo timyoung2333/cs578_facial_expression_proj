@@ -25,7 +25,7 @@ class CNN(nn.Module):
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 7)
 
-        self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.to(self.device)
 
     def forward(self, x):
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     model = CNN()
     scores_train = []
     scores_test = []
-    model.train(X_train, y_train, debug=True)
+    model.train(X_train, y_train, epoch_num=10000, debug=True)
     # print("mean accuracy (train):", model.score(X_train, y_train))
     # print("mean accuracy (test):", model.score(X_test, y_test))
 
