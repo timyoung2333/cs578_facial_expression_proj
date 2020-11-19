@@ -40,6 +40,9 @@ class SVM(sklearn.svm.SVC):
 
     def set_params(self, params):
         return super().set_params(**params)
+    
+    def predict_proba(self, X):
+        return super().predict_proba(X)
 
 if __name__=="__main__":
 

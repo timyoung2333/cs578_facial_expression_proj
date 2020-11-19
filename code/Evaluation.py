@@ -48,6 +48,28 @@ class Evaluation:
             return 12
 
         return -1
+    
+    def kfoldValid(self, k, model, proba=False):
+        y_train_pred = []
+        y_train_true = []
+        y_test_pred = []
+        y_test_true = []
+        train_scores = []
+        test_scores = []
+        X_train, y_train, X_test, y_test = self.kfoldSplit(10, 1)
+        y_train_true.append(y_train)
+        y_test_true.append(y_test)
+        model.train(X_train, y_train)
+        if proba:
+            y_train_pred.append(model.predict_proba(X_train))
+            y_test_pred.append(model.predict_proba(X_test))
+        else:
+            y_train_pred.append(model.predict(X_train))
+            y_test_pred.append(model.predict(X_test))
+            # todo may need to use our own implementation to calculate score
+        train_scores.append(model.score(X_train, y_train))
+        test_scores.append(model.score(X_test, y_test))
+        return y_train_pred, y_train_true, y_test_pred, y_test_true, train_scores, test_scores
 
     def kfoldSplit(self, k, idx):
         """
