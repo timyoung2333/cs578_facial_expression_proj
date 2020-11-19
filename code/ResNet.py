@@ -83,7 +83,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
         self.linear = nn.Linear(512*block.expansion, num_classes)
 
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
         self.to(self.device)
 
     def _make_layer(self, block, planes, num_blocks, stride):
@@ -113,7 +113,7 @@ class ResNet(nn.Module):
         # labels = labels.to(self.device).long()
 
         dataset = TensorDataset(inputs, labels)
-        dataloader = DataLoader(dataset, batch_size=8)
+        dataloader = DataLoader(dataset, batch_size=16)
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
@@ -135,6 +135,10 @@ class ResNet(nn.Module):
                 loss.backward()
                 optimizer.step()
 
+            del local_batch
+            del local_labels
+            torch.cuda.empty_cache()
+
             # print loss
             if debug:
                 score1 = self.score(X_train, y_train)
@@ -152,8 +156,6 @@ class ResNet(nn.Module):
             pickle.dump(scores_test, open("../result/iter_vs_acc/ResNet_scores_test.pkl", "wb"))
             print('Debugging pickle files have been saved.')
 
-        torch.cuda.ipc_collect()
-
     def save(self, path="./model/resnet.pth"):
         """
         Save the trained model
@@ -164,11 +166,24 @@ class ResNet(nn.Module):
     def predict(self, X):
 
         inputs = torch.Tensor(X.reshape((len(X), 1, 48, 48)))
-        inputs = inputs.to(self.device)
-        outputs = self(inputs)
-        _, predicted = torch.max(outputs, 1)
+        tmp = torch.Tensor(np.zeros(len(X), ))
+        # inputs = inputs.to(self.device)
 
-        return predicted.cpu().numpy()
+        dataset = TensorDataset(inputs, tmp)
+        dataloader = DataLoader(dataset, batch_size=16)
+
+        res = []
+        for local_batch, _ in dataloader:
+
+            local_batch = local_batch.to(self.device)
+            outputs = self(local_batch)
+            _, predicted = torch.max(outputs, 1)
+
+            y_hat = list(predicted.cpu().numpy())
+            res += y_hat
+
+        y_hat = np.array(res)
+        return y_hat
 
     def score(self, X, y):
         """
@@ -187,13 +202,13 @@ class ResNet(nn.Module):
 if __name__ == "__main__":
 
     # Sample code
-    fer = FER2013(filename='../data/subset3500.csv')
-    img_ids = ["{:05d}".format(i) for i in range(1000)]
+    fer = FER2013()
+    img_ids = ["{:05d}".format(i) for i in range(500)]
 
     import random
     random.shuffle(img_ids)
-    X_train, y_train = fer.getSubset(img_ids[:800], encoding="raw_pixels")
-    X_test, y_test = fer.getSubset(img_ids[800:], encoding="raw_pixels")
+    X_train, y_train = fer.getSubset(img_ids[:400], encoding="raw_pixels")
+    X_test, y_test = fer.getSubset(img_ids[400:], encoding="raw_pixels")
 
     # ResNet 34
     model = ResNet(Bottleneck, [3, 4, 6, 3])
