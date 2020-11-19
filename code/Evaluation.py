@@ -116,14 +116,14 @@ class Evaluation:
             cf_matrix[em] = np.divide(cf_matrix[em], np.sum(cf_matrix[em]))
         return train_acc, test_acc, cf_matrix
 
-    def kfoldCV(self, k, model, proba=False):
+    def kfoldCV(self, k, model, proba=False, run_once=False):
         y_train_pred = []
         y_train_true = []
         y_test_pred = []
         y_test_true = []
         train_scores = []
         test_scores = []
-        for f in range(k):
+        for f in range(1 if run_once else k):
             X_train, y_train, X_test, y_test = self.kfoldSplit(k, f)
             y_train_true.append(y_train)
             y_test_true.append(y_test)
@@ -147,7 +147,7 @@ class Evaluation:
             param_comb.append(params)
         return param_comb
 
-    def gridSearchCV(self, k, model, param_grid=None, save_path=''):
+    def gridSearchCV(self, k, model, param_grid=None, save_path='', run_once=False):
         if param_grid is None:
             print('Should provide at least one param!')
             return
@@ -155,7 +155,7 @@ class Evaluation:
         param_grid = self.getAllParamCombinations(param_grid)
         for params in tqdm(param_grid):
             model.set_params(params)
-            _, _, _, _, train_sc, test_sc = self.kfoldCV(k, model)
+            _, _, _, _, train_sc, test_sc = self.kfoldCV(k, model, run_once=run_once)
             print('Finished cross validation for model {}'.format(tuple(params.items())))
             key_train = list(params.values()) + ['Train']
             key_test = list(params.values()) + ['Test']
