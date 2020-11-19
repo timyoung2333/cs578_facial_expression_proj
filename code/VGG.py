@@ -69,13 +69,14 @@ class VGG(nn.Module):
         # labels = labels.to(self.device).long()
 
         dataset = TensorDataset(inputs, labels)
-        dataloader = DataLoader(dataset, batch_size=8)
+        dataloader = DataLoader(dataset, batch_size=32)
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
 
         for epoch in range(epoch_num):  # loop over the dataset multiple times
 
+            loss = None
             for local_batch, local_labels in dataloader:
 
                 local_batch = local_batch.to(self.device)
@@ -90,15 +91,15 @@ class VGG(nn.Module):
                 loss.backward()
                 optimizer.step()
 
-                # print loss
-                if debug:
-                    score1 = self.score(X_train, y_train)
-                    score2 = self.score(X_test, y_test)
-                    scores_train.append(score1)
-                    scores_test.append(score2)
-                    print("epoch: {}, score (train): {:.3f}, score (test): {:.3f}".format(epoch+1, score1, score2))
-                else:
-                    print("epoch: {}, loss: {:.3f}".format(epoch+1, loss.item()))
+            # print loss
+            if debug:
+                score1 = self.score(X_train, y_train)
+                score2 = self.score(X_test, y_test)
+                scores_train.append(score1)
+                scores_test.append(score2)
+                print("epoch: {}, score (train): {:.3f}, score (test): {:.3f}".format(epoch+1, score1, score2))
+            else:
+                print("epoch: {}, loss: {:.3f}".format(epoch+1, loss.item()))
 
         print('Finished Training')
 
@@ -106,6 +107,8 @@ class VGG(nn.Module):
             pickle.dump(scores_train, open("../result/iter_vs_acc/VGG_scores_train.pkl", "wb"))
             pickle.dump(scores_test, open("../result/iter_vs_acc/VGG_scores_test.pkl", "wb"))
             print('Debugging pickle files have been saved.')
+
+        torch.cuda.ipc_collect()
 
     def save(self, path="./model/vgg.pth"):
         """
@@ -141,16 +144,16 @@ if __name__ == "__main__":
 
     # Sample code
     fer = FER2013(filename='../data/subset3500.csv')
-    img_ids = ["{:05d}".format(i) for i in range(3500)]
+    img_ids = ["{:05d}".format(i) for i in range(1000)]
 
     import random
     random.shuffle(img_ids)
-    X_train, y_train = fer.getSubset(img_ids[:3000], encoding="raw_pixels")
-    X_test, y_test = fer.getSubset(img_ids[3000:], encoding="raw_pixels")
+    X_train, y_train = fer.getSubset(img_ids[:800], encoding="raw_pixels")
+    X_test, y_test = fer.getSubset(img_ids[800:], encoding="raw_pixels")
 
     model = VGG()
     scores_train = []
     scores_test = []
-    model.train(X_train, y_train, epoch_num=10000, debug=True)
+    model.train(X_train, y_train, epoch_num=2000, debug=True)
     # print("mean accuracy (train):", model.score(X_train, y_train))
     # print("mean accuracy (test):", model.score(X_test, y_test))
