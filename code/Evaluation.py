@@ -56,7 +56,7 @@ class Evaluation:
         y_test_true = []
         train_scores = []
         test_scores = []
-        X_train, y_train, X_test, y_test = self.kfoldSplit(10, 1)
+        X_train, y_train, X_test, y_test = self.kfoldSplit(k, 0)
         y_train_true.append(y_train)
         y_test_true.append(y_test)
         model.train(X_train, y_train)
