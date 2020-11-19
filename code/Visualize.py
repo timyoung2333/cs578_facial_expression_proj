@@ -422,24 +422,33 @@ class Visualize:
         else:
             plt.show()
 
-    def plotAccuSubsetSize(self, subset_to_scores, title='', save_path=''):
-        x = list(subset_to_scores.keys())
-        y_train_mean = [np.mean(l[0]) for l in subset_to_scores.values()]
-        y_test_mean = [np.mean(l[1]) for l in subset_to_scores.values()]
-        y_train_std = [np.std(l[0]) for l in subset_to_scores.values()]
-        y_test_std = [np.std(l[1]) for l in subset_to_scores.values()]
+    def plotAccuSubsetSize(self, algos, title='', save_path=''):
+        assert algos, 'Algorithms should not be empty!'
+        algorithms = list(algos.keys())
         plt.figure()
-        plt.errorbar(x=x, y=y_train_mean, yerr=y_train_std)
-        plt.errorbar(x=x, y=y_test_mean, yerr=y_test_std)
-        plt.xticks(ticks=x)
+        for algo, pair in algos.items():
+            x = []
+            y = []
+            for sub_size, scores in pair.items():
+                x.append(sub_size)
+                score_mean = np.mean(scores)
+                y.append(score_mean)
+            plt.plot(x, y, lw=2)
+            plt.xticks(ticks=x)
+        # plt.errorbar(x=x, y=y_train_mean, yerr=y_train_std)
+        # plt.errorbar(x=x, y=y_test_mean, yerr=y_test_std)
+        # plt.xticks(ticks=x)
         plt.title(title)
         plt.xlabel('Subset Size')
         plt.ylabel('Accuracy')
-        plt.legend(['Training', 'Test'])
+        plt.legend(algorithms)
+        # plt.legend(['Training', 'Test'])
         if save_path:
             plt.savefig(save_path)
         else:
             plt.show()
+
+
 
 def tuneHyperParams():
     vis = Visualize()
@@ -473,23 +482,69 @@ def accuVsSubsetSize():
     # 2. Accuracy on Training and Test set v.s. subset size
     #   2.1 Perceptron
     # Should acquire best_param from Evaluation.getBestModelAndScore
-    best_param = {'penalty': 'l2', 'alpha': 0.001, 'max_iter': 100}
-    subset_to_scores = {}
-    for root, dirs, files in os.walk('../result/Perceptron/'):
-        files.sort(key=lambda x: int(re.findall("\d+", x)[0]))
-        print(files)
-        for file in files:
-            base_name, ext = os.path.splitext(file)
-            if ext == '.csv':
-                print(root + file)
-                train_scores, test_scores = vis.loadCVScores(root + file, best_param)
-                subset_size = int(re.findall("\d+", base_name)[0])
-                print(subset_size)
-                subset_to_scores[subset_size] = [train_scores, test_scores]
-    vis.plotAccuSubsetSize(subset_to_scores, 'Accuracy of Training and Test set v.s. Subset Size of Perceptron',
-                           '../result/Perceptron/AccuracyVsSubsetSizeFigures/' + str(best_param.values()) + '.pdf')
+    best_param_perceptron = {'penalty': 'l1', 'alpha': 0.0001, 'max_iter': 1000}
+    best_param_svm = {'C': 100, 'gamma': 0.01, 'kernel': 'rbf'}
+    best_param_adaboost = {'n_estimators': 500, 'learning_rate': 0.1}
+
+    # subset_to_scores = {}
+    # perceptron_raw_subset_scores = {}
+    # perceptron_rawlm_subset_scores = {}
+    # svm_raw_subset_scores = {}
+    # for root, dirs, files in os.walk('../result/Perceptron/'):
+    #     files.sort(key=lambda x: int(re.findall("\d+", x)[0]))
+    #     print(files)
+    #     for file in files:
+    #         base_name, ext = os.path.splitext(file)
+    #         if ext == '.csv':
+    #             print(root + file)
+    #             train_scores, test_scores = vis.loadCVScores(root + file, best_param_perceptron)
+    #             subset_size = int(re.findall("\d+", base_name)[0])
+    #             print(subset_size)
+    #             if 'landmarks' in base_name:
+    #                 perceptron_raw_subset_scores[subset_size] = [train_scores, test_scores]
+    #             else:
+    #                 perceptron_rawlm_subset_scores[subset_size] = [train_scores, test_scores]
+    # vis.plotAccuSubsetSize(subset_to_scores, 'Accuracy of Training and Test set v.s. Subset Size of Perceptron',
+    #                        '../result/Perceptron/AccuracyVsSubsetSizeFigures/' + str(best_param_perceptron.values()) + '.pdf')
+
+    # hard write scores
+    perc_raw_subset_scores = {50: [0.26,0.2,0.31,0.17,0.29,0.2,0.17,0.14,0.17,0.31],
+                              100: [0.3,0.19,0.21,0.29,0.24,0.26,0.16,0.26,0.14,0.26],
+                              150: [0.24,0.25,0.22,0.26,0.23,0.21,0.14,0.27,0.19,0.18],
+                              200: [0.27,0.21,0.24,0.22,0.2,0.24,0.21,0.15,0.16,0.24],
+                              250: [0.19,0.23,0.17,0.16,0.29,0.17,0.24,0.22,0.17,0.23],
+                              300: [0.31,0.27,0.23,0.19,0.24,0.3,0.24,0.29,0.23,0.22],
+                              350: [0.29,0.22,0.19,0.22,0.28,0.26,0.2,0.22,0.18,0.2],
+                              400: [0.3,0.23,0.2,0.27,0.24,0.21,0.25,0.2,0.24,0.28],
+                              450: [0.23,0.18,0.23,0.18,0.22,0.27,0.17,0.24,0.2,0.27],
+                              500: [0.3,0.24,0.24,0.3,0.25,0.21,0.16,0.29,0.27,0.18]}
+
+    svm_raw_subset_scores = {50: [0.2,0.286,0.286,0.286,0.257,0.2,0.314,0.314,0.286,0.2],
+                             100: [0.4,0.271,0.314,0.3,0.243,0.271,0.143,0.229,0.243,0.186],
+                             150: [0.41,0.295,0.295,0.295,0.152,0.333,0.229,0.305,0.305,0.238],
+                             200: [0.364,0.357,0.329,0.25,0.264,0.321,0.329,0.264,0.307,0.307],
+                             250: [0.383,0.309,0.274,0.251,0.314,0.286,0.337,0.32,0.223,0.297],
+                             300: [0.362,0.39,0.248,0.295,0.286,0.352,0.319,0.248,0.352,0.314],
+                             350: [0.384,0.351,0.241,0.31,0.347,0.327,0.318,0.318,0.339,0.331],
+                             400: [0.364,0.364,0.279,0.35,0.357,0.286,0.354,0.336,0.339,0.307],
+                             450: [0.362,0.337,0.327,0.371,0.337,0.352,0.362,0.359,0.34,0.34],
+                             500: [0.34,0.33,0.35,0.37,0.32,0.38,0.34,0.36,0.35,0.35]}
+
+    ada_raw_subset_scores = {50: [0.17,0.23,0.29,0.2,0.34,0.11,0.11,0.2,0.2,0.11],
+                             100: [0.27,0.14,0.33,0.17,0.26,0.16,0.21,0.27,0.26,0.21],
+                             150: [0.24,0.29,0.26,0.21,0.3,0.21,0.19,0.22,0.23,0.24],
+                             200: [0.22,0.24,0.25,0.29,0.21,0.23,0.28,0.28,0.35,0.27],
+                             250: [0.26,0.29,0.22,0.22,0.28,0.27,0.3,0.24,0.19,0.26],
+                             300: [0.25,0.27,0.23,0.21,0.24,0.32,0.31,0.2,0.24,0.25],
+                             350: [0.25,0.25,0.21,0.27,0.31,0.29,0.22,0.24,0.25,0.29],
+                             400: [0.28,0.27,0.26,0.28,0.34,0.24,0.26,0.29,0.32,0.28],
+                             450: [0.28,0.27,0.26,0.33,0.25,0.27,0.29,0.33,0.26,0.37],
+                             500: [0.3,0.26,0.28,0.31,0.25,0.27,0.29,0.29,0.33,0.35]}
+
+    algos = {'Perceptron': perc_raw_subset_scores, 'SVM': svm_raw_subset_scores, 'AdaBoost': ada_raw_subset_scores}
+    vis.plotAccuSubsetSize(algos, 'Comparison between Best Accuracy and Subset Size', '../result/accuVsSubset.pdf')
 
 if __name__ == "__main__":
-    tuneHyperParams()
+    # tuneHyperParams()
     accuVsSubsetSize()
 
