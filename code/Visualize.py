@@ -91,20 +91,6 @@ class Visualize:
         else:
             plt.show()
 
-    def plotAccuracy(self, param_value_dict, xlabel='', title=''):
-        plt.figure()
-        plt.bar(list(param_value_dict.keys()), list(param_value_dict.values()))
-        plt.xticks(ticks=list(param_value_dict.keys()))
-        # plt.plot(x, scores)
-        # plt.scatter(x, scores)
-        # for i in x:
-        #     plt.text(x[i-1], scores[i-1], '%.02f' % scores[i-1])
-        plt.xlabel(xlabel)
-        plt.ylabel('Accuracy')
-        plt.title(title)
-        plt.tight_layout()
-        plt.show()
-
     def saveConfMat(self, path, param1, param2):
         with open(path, 'a') as f:
             csv_writer = csv.writer(f, dialect='excel')
