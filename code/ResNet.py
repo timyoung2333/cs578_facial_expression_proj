@@ -163,8 +163,8 @@ class ResNet(nn.Module):
 
 if __name__ == "__main__":
 
-    # # Sample code
-    fer = FER2013("../data/sample.csv")
+    # Sample code
+    fer = FER2013(filename='../data/subset3500.csv')
 
     train_list = ["{:05d}".format(i) for i in range(80)]
     X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
@@ -172,8 +172,8 @@ if __name__ == "__main__":
     test_list = ["{:05d}".format(i) for i in range(80, 100)]
     X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
 
-    # ResNet 152
-    model = ResNet(Bottleneck, [3, 8, 36, 3])
+    # ResNet 34
+    model = ResNet(Bottleneck, [3, 4, 6, 3])
     model.train(X_train, y_train, epoch_num=5000)
     print("mean accuracy (train):", model.score(X_train, y_train))
     print("mean accuracy (test):", model.score(X_test, y_test))
