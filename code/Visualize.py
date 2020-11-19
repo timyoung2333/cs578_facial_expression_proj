@@ -441,11 +441,9 @@ class Visualize:
         else:
             plt.show()
 
-
-if __name__ == "__main__":
+def tuneHyperParams():
     vis = Visualize()
     # 1. Hyper-parameter tuning of all algorithms
-
     #   1.1 Perceptron
     params = {
         'penalty': ['l2', 'l1', 'elasticnet'],
@@ -470,6 +468,8 @@ if __name__ == "__main__":
     #   1.3. SVM
     # todo
 
+def accuVsSubsetSize():
+    vis = Visualize()
     # 2. Accuracy on Training and Test set v.s. subset size
     #   2.1 Perceptron
     # Should acquire best_param from Evaluation.getBestModelAndScore
@@ -488,3 +488,8 @@ if __name__ == "__main__":
                 subset_to_scores[subset_size] = [train_scores, test_scores]
     vis.plotAccuSubsetSize(subset_to_scores, 'Accuracy of Training and Test set v.s. Subset Size of Perceptron',
                            '../result/Perceptron/AccuracyVsSubsetSizeFigures/' + str(best_param.values()) + '.pdf')
+
+if __name__ == "__main__":
+    tuneHyperParams()
+    accuVsSubsetSize()
+
