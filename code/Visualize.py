@@ -486,4 +486,5 @@ if __name__ == "__main__":
                 subset_size = int(re.findall("\d+", base_name)[0])
                 print(subset_size)
                 subset_to_scores[subset_size] = [train_scores, test_scores]
-    vis.plotAccuSubsetSize(subset_to_scores, 'Accuracy of Training and Test set v.s. Subset Size of Perceptron')
+    vis.plotAccuSubsetSize(subset_to_scores, 'Accuracy of Training and Test set v.s. Subset Size of Perceptron',
+                           '../result/Perceptron/AccuracyVsSubsetSizeFigures/' + str(best_param.values()) + '.pdf')
