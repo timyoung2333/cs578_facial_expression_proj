@@ -143,8 +143,8 @@ class Evaluation:
                 # save the params and k-fold train & test scores as 2 lines into the .csv file
                 with open(save_path, 'a') as f:
                     writer = csv.writer(f, dialect='excel')
-                    writer.writerow(key_train + list(np.round(train_sc, 2)))
-                    writer.writerow(key_test + list(np.round(test_sc, 2)))
+                    writer.writerow(key_train + list(np.round(train_sc, 3)))
+                    writer.writerow(key_test + list(np.round(test_sc, 3)))
         if save_path:
             print('Write all cv scores to file finished!')
 
@@ -246,21 +246,27 @@ class Evaluation:
         """
     
     def SVM_eval_itTimes(self):
-        path = "../result/SVM/iter_" + self.encoding + ".csv"
-        max_it = [50 * i for i in range(1, 11)]
-        for i in range(10):
-            it = max_it[i]
+        params = {}
+        params["raw_pixels"] = {'C': [100], 'kernel': ['rbf'], 'gamma': [0.01], 'max_iter': np.arange(50, 500+1, 50)} 
+        params["raw_pixels+landmarks"] = {'C': [10], 'kernel': ['rbf'], 'gamma': ['auto'], 'max_iter': np.arange(50, 500+1, 50)}
 
-            if self.encoding == "raw_pixels":
-                model = SVM(kernel='rbf', C=100, gamma=0.01, max_iter=it)
-            else:
-                model = SVM(kernel='rbf', C=10, gamma='auto', max_iter=it)
-            _, _, _, _, train_sc, test_sc = self.kfoldCV(10, model)
-            print(f'max_iter = {it}, train_sc = {train_sc}, test_sc = {test_sc}')
-            with open(path) as f:
-                writer = csv.writer(f, dialect='excel')
-                writer.writerow(f'max_iter{it},train,{list(np.round(train_sc, 3))}')
-                writer.writerow(f'max_iter{it},test,{list(np.round(test_sc, 3))}')
+        # Subset size: 10 subset data sizes
+        max_iters = np.arange(50, 500 + 1, 50)  # balanced sampling from all labels
+
+        # Feature encoding
+        feature_encoding_methods = ['raw_pixels', 'raw_pixels+landmarks']
+
+        # Train models by cross validation and save results
+        k = 10  # k-fold Cross Validation
+        for encoding in feature_encoding_methods:
+            eva = Evaluation(fer, 500, encoding)
+            params[encoding]['max_iter'] = [it]
+            model = SVM()
+            path = '../result/SVM/iter.csv'
+            print(f"Saving file to {path}")
+            eva.gridSearchCV(k, model, param_grid=params[encoding], save_path=path)
+            print('Finished training for feature encoding {} of all subset sizes and parameters!'.format(encoding))
+        print('Finished all the training, congratulations!')
 
 
 # fer = FER2013(filename="/Users/timyang/Downloads/CS578-Project-master/data/icml_face_data.csv")

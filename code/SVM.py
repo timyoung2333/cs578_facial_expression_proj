@@ -81,10 +81,10 @@ if __name__=="__main__":
     params["raw_pixels+landmarks"] = {'C': [10], 'kernel': ['rbf'], 'gamma': ['auto']}
 
     # Subset size: 10 subset data sizes
-    samples_per_expression = np.arange(500, 500 + 1, 50)  # balanced sampling from all labels
+    samples_per_expression = np.arange(50, 450 + 1, 50)  # balanced sampling from all labels
 
     # Feature encoding
-    feature_encoding_methods = ['raw_pixels', 'raw_pixels+landmarks']
+    feature_encoding_methods = ['raw_pixels+landmarks']
 
     # Train models by cross validation and save results
     k = 10  # k-fold Cross Validation
