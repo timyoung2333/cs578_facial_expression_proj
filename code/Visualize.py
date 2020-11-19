@@ -215,20 +215,23 @@ class Visualize:
         else:
             plt.show()
 
-    def loadAndPlotRocCurve(self, roc_coords_paths=[]):
+    def loadAndPlotRocCurve(self, roc_coords_paths=[], save_fig_path=''):
         if roc_coords_paths:
             plt.figure()
             for path in roc_coords_paths:
                 # get algorithm name
                 pa, fi = os.path.split(path)
                 name, ext = os.path.splitext(fi)
+                algorithm = name.split('_')[0]
                 # plot the coordinates
                 with open(path, 'r') as f:
                     csv_reader = csv.reader(f)
                     fpr = next(csv_reader)
                     tpr = next(csv_reader)
+                    fpr = [float(i) for i in fpr]
+                    tpr = [float(i) for i in tpr]
                     auc = self.aucByRate(fpr, tpr)
-                    plt.plot(fpr, tpr, lw=2, label='ROC curve of {0} (area = {1:0.2f})'.format(name, auc))
+                    plt.plot(fpr, tpr, lw=2, label='ROC curve of {0} (area = {1:0.2f})'.format(algorithm, auc))
             # plot random guess line for binary prediction
             plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
             plt.xlim([0.0, 1.0])
@@ -238,6 +241,10 @@ class Visualize:
             plt.title('Receiver Operating Characteristic (ROC) of Multiple Algorithms')
             plt.legend(loc="lower right")
             plt.tight_layout()
+            if save_fig_path:
+                plt.savefig(save_fig_path)
+            else:
+                plt.show()
         else:
             print('Path list is empty!')
 
@@ -612,15 +619,25 @@ def accuVsIteration():
             test.append(te)
     vis.plotAccuIter('Perceptron', iter, train, test, '../docs/report/figures/iter_vs_acc/Perceptron.pdf')
 
+def roc():
+    vis = Visualize()
+    roc_csv_paths = ['../result/DecisionTree/DecisionTree_roc_rp.csv',
+                     '../result/Perceptron/Perceptron_roc_rp.csv',
+                     '../result/AdaBoost/AdaBoost_roc_rp.csv',
+                     '../result/SVM/SVM_roc_rp.csv']
+    vis.loadAndPlotRocCurve(roc_csv_paths, save_fig_path='../result/roc.pdf')
+
+
 if __name__ == "__main__":
 
     # tuneHyperParams()
     # accuVsSubsetSize()
     # accuVsIteration()
+    roc()
 
-    vis = Visualize()
+    # vis = Visualize()
     # vis.plotIterVsAcc(method="CNN")
     # vis.plotIterVsAcc(method="VGG")
-    vis.plotIterVsAcc(method="ResNet")
+    # vis.plotIterVsAcc(method="ResNet")
 
 
