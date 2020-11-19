@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 from tqdm import tqdm
+import pickle
 
 class CNN(nn.Module):
     """Convolutional neural network
@@ -36,7 +37,7 @@ class CNN(nn.Module):
         x = self.fc3(x)
         return x
 
-    def train(self, X, y, epoch_num=500):
+    def train(self, X, y, epoch_num=2000, debug=False):
 
         inputs = torch.Tensor(X.reshape((len(X), 1, 48, 48)))
         labels = torch.Tensor(y)
@@ -59,9 +60,21 @@ class CNN(nn.Module):
             optimizer.step()
 
             # print loss
-            print("epoch: {}, loss: {:.3f}".format(epoch+1, loss.item()))
+            if debug:
+                score1 = self.score(X_train, y_train)
+                score2 = self.score(X_test, y_test)
+                scores_train.append(score1)
+                scores_test.append(score2)
+                print("epoch: {}, score (train): {:.3f}, score (test): {:.3f}".format(epoch+1, score1, score2))
+            else:
+                print("epoch: {}, loss: {:.3f}".format(epoch+1, loss.item()))
 
         print('Finished Training')
+
+        if debug:
+            pickle.dump(scores_train, open("../result/iter_vs_acc/CNN_scores_train.pkl", "wb"))
+            pickle.dump(scores_test, open("../result/iter_vs_acc/CNN_scores_test.pkl", "wb"))
+            print('Debugging pickle files have been saved.')
 
     def save(self, path="./model/cnn.pth"):
         """
@@ -90,18 +103,23 @@ class CNN(nn.Module):
         y_hat = self.predict(X)
         return sum(y == y_hat) / len(y)
 
+    def set_params(self, params):
+        pass
+
 if __name__ == "__main__":
 
     # Sample code
-    fer = FER2013()
+    fer = FER2013(filename='../data/subset3500.csv')
+    img_ids = ["{:05d}".format(i) for i in range(3500)]
 
-    train_list = ["{:05d}".format(i) for i in range(4000)]
-    X_train, y_train = fer.getSubset(train_list, encoding="raw_pixels")
-
-    test_list = ["{:05d}".format(i) for i in range(4000, 5000)]
-    X_test, y_test = fer.getSubset(test_list, encoding="raw_pixels")
+    import random
+    random.shuffle(img_ids)
+    X_train, y_train = fer.getSubset(img_ids[:3000], encoding="raw_pixels")
+    X_test, y_test = fer.getSubset(img_ids[3000:], encoding="raw_pixels")
 
     model = CNN()
-    model.train(X_train, y_train, epoch_num=10000)
-    print("mean accuracy (train):", model.score(X_train, y_train))
-    print("mean accuracy (test):", model.score(X_test, y_test))
+    scores_train = []
+    scores_test = []
+    model.train(X_train, y_train, epoch_num=10000, debug=True)
+    # print("mean accuracy (train):", model.score(X_train, y_train))
+    # print("mean accuracy (test):", model.score(X_test, y_test))
