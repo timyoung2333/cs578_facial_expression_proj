@@ -56,19 +56,32 @@ if __name__=="__main__":
     # model.train(X_train, y_train)
     # print("mean accuracy:", model.score(X_test, y_test))
 
+ if __name__=="__main__":
+
+    # # Example code
+    # fer = FER2013()
+
+    # train_list = ["{:05d}".format(i) for i in range(20000)]
+    # X_train, y_train = fer.getSubset(train_list)
+
+    # test_list = ["{:05d}".format(i) for i in range(20000, 25000)]
+    # X_test, y_test = fer.getSubset(test_list)
+
+    # model = SVM(C=1.0, decision_function_shape='ovo', kernel='rbf', tol=0.001, verbose=True)
+    # model.train(X_train, y_train)
+    # print("mean accuracy:", model.score(X_test, y_test))
+
     fer = FER2013(filename='../data/subset3500.csv')
     from Evaluation import Evaluation
     from Visualize import Visualize
 
     # Hyperparameter tuning
-    params = {
-        'C': [1.0, 2.0, 4.0, 8.0],
-        'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
-        'gamma': ['scale', 'auto']
-    }
+    params = {}
+    params["raw_pixels"] = {'C': [100], 'kernel': ['rbf'], 'gamma': [0.01]}    
+    params["raw_pixels+landmarks"] = {'C': [10], 'kernel': ['rbf'], 'gamma': ['auto']}
 
     # Subset size: 10 subset data sizes
-    samples_per_expression = np.arange(50, 500 + 1, 50)  # balanced sampling from all labels
+    samples_per_expression = np.arange(500, 500 + 1, 50)  # balanced sampling from all labels
 
     # Feature encoding
     feature_encoding_methods = ['raw_pixels', 'raw_pixels+landmarks']
@@ -79,8 +92,9 @@ if __name__=="__main__":
         for subset_size in samples_per_expression:
             eva = Evaluation(fer, subset_size, encoding)
             model = SVM()
-            eva.gridSearchCV(k, model, param_grid=params,
-                             save_path='../result/SVM/{0}-subset{1}.csv'.format(encoding, subset_size))
+            path = '../result/SVM/{0}-subset{1}-new.csv'.format(encoding, subset_size)
+            print(f"Saving file to {path}")
+            eva.gridSearchCV(k, model, param_grid=params[encoding], save_path=path)
             print('Finished training for subset size {} of all parameters!'.format(subset_size))
         print('Finished training for feature encoding {} of all subset sizes and parameters!'.format(encoding))
     print('Finished all the training, congratulations!')

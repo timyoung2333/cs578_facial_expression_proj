@@ -196,12 +196,13 @@ class Evaluation:
             return X_train, y_train, X_test, y_test
         
     
-    def bootstrappingCV(self, B, model):
+    def bootstrappingValid(self, B, model):
         y_train_pred = []
         y_train_true = []
         y_test_pred = []
         y_test_true = []
-        scores = []
+        train_scores = []
+        test_scores = []
         
         for b in range(B):
             X_train, y_train, X_test, y_test = self.bootstrappingSplit()
@@ -210,8 +211,48 @@ class Evaluation:
             model.train(X_train, y_train)
             y_train_pred.append(model.predict(X_train))
             y_test_pred.append(model.predict(X_test))
-            scores.append(model.score(X_test, y_test))
-        return y_train_pred, y_train_true, y_test_pred, y_test_true, scores
+            train_scores.append(model.score(X_train, y_train))
+            test_scores.append(model.score(X_test, y_test))
+        return y_train_pred, y_train_true, y_test_pred, y_test_true, train_scores, test_scores
+    
+    def SVM_tuning(self, ez, max_iter=500, rbf=False):
+        path='../result/SVM/SVM_tuning_'
+        print(path)
+        if self.encoding == "raw_pixels":
+            ec = "rp"
+        else:
+            ec = "rp+lm"
+        path += "_" + ec
+        parameters_grid = {'kernel': ['linear','poly','rbf','sigmoid'], 'C':[0.01, 0.1, 1, 10, 100], 'decision_function_shape':['ovo', 'ovr']}
+        if rbf == True:
+            path += "_rbf"
+            parameters_grid = {'C':[0.01,0.1,1,10,100], 'gamma':['scale', 'auto', 0.01,0.1,1,10,100]}
+        path += ".csv"
+        print(f"Writting SVM tuning results to {path}")
+        self.gridSearchCV(10, SVM(), parameters_grid, easy=ez, save_path=path)
+
+        """
+        best parameter after tunning:
+        raw_pixels: C=100, gamma=0.01, kernel='rbf'
+        raw_pixels+landmarks: C=10, gamma='auto', kernel='rbf'
+        """
+    
+    def SVM_eval_itTimes(self):
+        path = "../result/SVM/iter_" + self.encoding + ".csv"
+        max_it = [50 * i for i in range(1, 11)]
+        for i in range(10):
+            it = max_it[i]
+
+            if self.encoding == "raw_pixels":
+                model = SVM(kernel='rbf', C=100, gamma=0.01, max_iter=it)
+            else:
+                model = SVM(kernel='rbf', C=10, gamma='auto', max_iter=it)
+            _, _, _, _, train_sc, test_sc = self.kfoldCV(10, model)
+            print(f'max_iter = {it}, train_sc = {train_sc}, test_sc = {test_sc}')
+            with open(path) as f:
+                writer = csv.writer(f, dialect='excel')
+                writer.writerow(f'max_iter{it},train,{list(np.round(train_sc, 3))}')
+                writer.writerow(f'max_iter{it},test,{list(np.round(test_sc, 3))}')
 
 
 # fer = FER2013(filename="/Users/timyang/Downloads/CS578-Project-master/data/icml_face_data.csv")
