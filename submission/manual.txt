@@ -1,0 +1,37 @@
+In this manual, we introduce the code structure and running environments.
+
+Hardward Requirement
+--------------------
+* CPU
+* GPU (at least 8GB memory and compatible with CUDA)
+* RAM (at least 32GB)
+
+Software Requirement
+--------------------
+* Unix-like System
+* Python >= 3.5
+* PyTorch >= 1.5.0
+* OpenCV (Python binding only) >= 4.1.0
+* dlib (Python binding only) >= 19.0.0
+* sklearn >= 0.21.0
+* NumPy >= 1.17.1
+* matplotlib >= 3.2.0
+
+Code Structure
+-------------------
+* Data Processing & Image Encoding:
+    - FER2013.py
+* Ploting:
+    - Visualize.py
+* Cross Validation & Boostrapping, Hyperparameter Tuning:
+    - Evaluation.py
+* Algorithm Implementation:
+    - Perceptron.py
+    - SVM.py
+    - DecisionTree.py
+    - AdaBoost.py
+    - CNN.py
+    - VGG.py
+    - ResNet.py
+
+Sample codes can be found at the end of each file.
