@@ -609,7 +609,7 @@ def accuVsIteration():
     # Perceptron
     train = []
     test = []
-    iter = np.arange(100, 1000+1, 100)
+    iter = np.arange(100, 1000+1, 10)
     with open('../result/Perceptron/iter.csv') as f:
         reader = csv.reader(f)
         for l in iter:

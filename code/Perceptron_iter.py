@@ -11,7 +11,7 @@ if __name__ == "__main__":
     param = {
             'penalty': ['l1'],
             'alpha': [0.0001],
-            'max_iter': np.arange(100, 1000+1, 100)
+            'max_iter': np.arange(100, 1000+1, 10)
         }
 
     # Train models by cross validation and save results
