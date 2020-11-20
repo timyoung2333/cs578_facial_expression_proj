@@ -575,8 +575,23 @@ def accuVsSubsetSize():
                              450: [0.28,0.27,0.26,0.33,0.25,0.27,0.29,0.33,0.26,0.37],
                              500: [0.3,0.26,0.28,0.31,0.25,0.27,0.29,0.29,0.33,0.35]}
 
-    algos = {'Perceptron': perc_raw_subset_scores, 'SVM': svm_raw_subset_scores, 'AdaBoost': ada_raw_subset_scores}
-    vis.plotAccuSubsetSize(algos, 'Comparison between Best Accuracy and Subset Size', '../result/accuVsSubset.pdf')
+    dt_raw_subset_scores = {50: [0.2,0.11,0.14,0.17,0.23,0.06,0.11,0.14,0.29,0.2],
+                            100: [0.2,0.27,0.16,0.2,0.16,0.17,0.1,0.2,0.16,0.11],
+                            150: [0.2,0.17,0.2,0.19,0.24,0.19,0.18,0.16,0.23,0.18],
+                            200: [0.24,0.21,0.26,0.19,0.21,0.24,0.19,0.19,0.24,0.21],
+                            250: [0.16,0.17,0.17,0.18,0.27,0.25,0.19,0.18,0.22,0.26],
+                            300: [0.2,0.22,0.19,0.21,0.23,0.26,0.22,0.22,0.19,0.2],
+                            350: [0.18,0.24,0.2,0.21,0.23,0.25,0.24,0.24,0.21,0.22],
+                            400: [0.22,0.24,0.22,0.22,0.22,0.2,0.22,0.23,0.2,0.24],
+                            450: [0.23,0.24,0.24,0.24,0.17,0.21,0.24,0.21,0.19,0.22],
+                            500: [0.23,0.21,0.23,0.25,0.2,0.23,0.22,0.21,0.23,0.27]}
+
+    algos = {'Perceptron': perc_raw_subset_scores,
+             'SVM': svm_raw_subset_scores,
+             'AdaBoost': ada_raw_subset_scores,
+             'DecisionTree': dt_raw_subset_scores}
+    vis.plotAccuSubsetSize(algos, 'Comparison between Best Accuracy and Subset Size',
+                           '../docs/report/figures/accuVsSubset.pdf')
 
 def accuVsIteration():
     vis = Visualize()
@@ -631,9 +646,9 @@ def roc():
 if __name__ == "__main__":
 
     # tuneHyperParams()
-    # accuVsSubsetSize()
+    accuVsSubsetSize()
     # accuVsIteration()
-    roc()
+    # roc()
 
     # vis = Visualize()
     # vis.plotIterVsAcc(method="CNN")
