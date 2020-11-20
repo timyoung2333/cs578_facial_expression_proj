@@ -34,4 +34,7 @@ Code Structure
     - VGG.py
     - ResNet.py
 
-Sample codes can be found at the end of each file.
+Troubleshooting
+---------------
+- Sample codes can be found at the end of each file. 
+- Reduce batch size if you run into out-of-memory error.
